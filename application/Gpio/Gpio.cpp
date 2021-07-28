@@ -2,32 +2,32 @@
 
 namespace Gpio
 {
-    [[nodiscard]] esp_err_t GpioBase::init(void)
+    esp_err_t GpioOutput::Init(const gpio_num_t pin)
+    {
+        _cfg.pin_bit_mask = static_cast<uint64_t>(1) << pin;
+        _cfg.mode = GPIO_MODE_OUTPUT;
+        _cfg.intr_type = GPIO_INTR_DISABLE;
+        _cfg.pull_down_en = GPIO_PULLDOWN_DISABLE;
+        _cfg.pull_up_en = GPIO_PULLUP_DISABLE;
+        return gpio_config(&_cfg);
+    }
+
+    esp_err_t GpioOutput::High(void)
     {
         esp_err_t status{ESP_OK};
 
-        status |= gpio_config(&_cfg);
+        status |= gpio_set_level(_pin, true);
 
         return status;
     }
 
-    [[nodiscard]] esp_err_t GpioOutput::init(void)
+    esp_err_t GpioOutput::Low(void)
     {
-        esp_err_t status{GpioBase::init()};
+        esp_err_t status{ESP_OK};
 
-        if (ESP_OK == status)
-        {
-            status |= set(_inverted_logic);
-        }
+        status |= gpio_set_level(_pin, false);
 
         return status;
-    }
-
-    esp_err_t GpioOutput::set(const bool state)
-    {
-        _state = state;
-        
-        return gpio_set_level(_pin, _inverted_logic ? !state : state);
     }
 
 } // namespace GPIO

@@ -14,6 +14,6 @@ public:
     esp_err_t setup(void);
     void run(void);
 
-    Gpio::GpioOutput led{GPIO_NUM_14, false};
+    Gpio::GpioOutput led;
     WIFI::Wifi testMac;
 };

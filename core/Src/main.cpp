@@ -26,8 +26,7 @@ esp_err_t Main::setup(void)
 {
     esp_err_t status{ESP_OK};
     ESP_LOGI(LOG_TAG, "Setup");
-
-    status |= led.init();
+    status |= led.Init(GPIO_NUM_14);
 
     return status;
 }
@@ -38,12 +37,12 @@ void Main::run(void)
 
     ESP_LOGI(LOG_TAG, "Hello World");
 
-    led.set(true);
+    led.High();
     ESP_LOGI(LOG_TAG, "LED on");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     ESP_LOGI(LOG_TAG, "LED off");
-    led.set(false);
+    led.Low();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());

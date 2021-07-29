@@ -4,9 +4,13 @@
 
 namespace WIFI
 {
-
     class Wifi
     {
+    private:
+        void state_machine(void);
+        esp_err_t _get_mac(void);
+        static char mac_addr_cstr[13];
+
     public:
         enum class state_e
         {
@@ -21,22 +25,13 @@ namespace WIFI
             ERROR
         };
 
-        Wifi(void)
-        {
-            _get_mac();
-        }
+        Wifi(void);
 
         esp_err_t init(void);  // Setup the stuff
         esp_err_t begin(void); // Start Wifi, conmnect, etc...
 
         state_e get_state(void);
         const char* get_mac(void) { return mac_addr_cstr; }
-
-    private:
-        void state_machine(void);
-
-        esp_err_t _get_mac(void);
-        static char mac_addr_cstr[13];
 
     }; // Wifi class
 

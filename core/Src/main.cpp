@@ -26,7 +26,6 @@ esp_err_t Main::setup(void)
 {
     esp_err_t status{ESP_OK};
     ESP_LOGI(LOG_TAG, "Setup");
-    status |= led.Init(GPIO_NUM_14);
 
     return status;
 }

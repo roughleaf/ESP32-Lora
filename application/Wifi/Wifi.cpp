@@ -2,6 +2,10 @@
 
 namespace WIFI
 {
+    Wifi::Wifi(void)
+    {
+        _get_mac();
+    }
 
     char Wifi::mac_addr_cstr[]{};
 

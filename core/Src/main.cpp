@@ -26,7 +26,9 @@ esp_err_t Main::setup(void)
 {
     esp_err_t status{ESP_OK};
     ESP_LOGI(LOG_TAG, "Setup");
-
+    std::cout << "Status: " << status << std::endl;;
+    spi_bus_initialize(SPI3_HOST, &spi_cfg, SPI_DMA_CH_AUTO);
+    LoraDev.Init();
     return status;
 }
     
@@ -45,6 +47,7 @@ void Main::run(void)
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
-    std::cout << "Mac Address: " << testMac.get_mac() << std::endl;
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    std::cout << "Mac Address: " << testMac.get_mac() << std::endl;;
+    LoraDev.WriteRegister(0x01, 0x09);
+    std::cout << "Lora Module Register 1 value: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
 }

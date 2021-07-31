@@ -26,8 +26,7 @@ esp_err_t Main::setup(void)
 {
     esp_err_t status{ESP_OK};
     ESP_LOGI(LOG_TAG, "Setup");
-    std::cout << "Status: " << status << std::endl;;
-    spi_bus_initialize(SPI3_HOST, &spi_cfg, SPI_DMA_CH_AUTO);
+    std::cout << "Status: " << status << std::endl;
     LoraDev.Init();
     return status;
 }
@@ -48,6 +47,7 @@ void Main::run(void)
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
     std::cout << "Mac Address: " << testMac.get_mac() << std::endl;;
-    LoraDev.WriteRegister(0x01, 0x09);
-    std::cout << "Lora Module Register 1 value: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
+    //LoraDev.WriteRegister(0x01, 0x09);
+    std::cout << "Lora SX1278 Register 1: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
+    std::cout << "Lora SX1278 Revision  : " << (int)LoraDev.ReadRegister(0x42) << std::endl;
 }

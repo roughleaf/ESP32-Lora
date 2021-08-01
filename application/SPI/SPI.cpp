@@ -38,7 +38,7 @@ namespace Ispi
             .input_delay_ns = 0,
             .spics_io_num = ss, // IO pin 5 is my chip select
             .flags = 0,
-            .queue_size = 1};
+            .queue_size = 5};
 
         status |= spi_bus_add_device(_spi_peripheral, &interface_cfg, &_handle);
 
@@ -47,45 +47,36 @@ namespace Ispi
 
     uint8_t Spi::ReadRegister(uint8_t reg_addr)
     {
-        uint8_t temp = reg_addr & 0x7F;
+        _transfer_byte(reg_addr & 0x7F, 0);
 
-        spi_transaction_t _spi_transaction{
-            .flags = SPI_TRANS_USE_RXDATA,
-            .cmd = 0,     // Read, Not used
-            .addr = temp, // Ensure read operation
-            .length = 8,
-            .rxlength = 8, // 0 defaults to length
-            .user = 0,
-            //.tx_buffer = NULL,
-            .tx_data = {0},
-            //.rx_buffer = NULL,
-            .rx_data = {0}};
-
-        spi_device_transmit(_handle, &_spi_transaction);
-
-        return _spi_transaction.rx_data[0];
+        return _transaction.rx_data[0];
     }
 
     esp_err_t Spi::WriteRegister(uint8_t reg_addr, uint8_t reg_data)
     {
-        uint8_t temp = reg_addr | 0x80;
-
         esp_err_t status{ESP_OK};
 
-        spi_transaction_t _spi_transaction{
-            .flags = SPI_TRANS_USE_TXDATA,
-            .cmd = 1,           // Read, Not used
-            .addr = temp,    // Ensure write operation
-            .length = 8,
-            .rxlength = 0,      // 0 defaults to length
-            .user = 0,
-            //.tx_buffer = NULL,
-            .tx_data = {reg_data, 0, 0, 0},
-            //.rx_buffer = NULL,
-            .rx_data = {0}};
+        status |= _transfer_byte(reg_addr | 0x80, reg_data);
 
-           status = spi_device_transmit(_handle, &_spi_transaction);
+        return status;
+    }
 
+    esp_err_t Spi::_transfer_byte(uint8_t reg_addr, uint8_t data)
+    {
+        esp_err_t status { ESP_OK };
+
+        _transaction.flags = SPI_TRANS_USE_RXDATA | SPI_TRANS_USE_TXDATA;
+        _transaction.addr = reg_addr;
+        _transaction.rx_data[0] = data;
+
+        status |= spi_device_transmit(_handle, &_transaction);
+
+        return status;
+    }
+
+    esp_err_t Spi::_transfer_multiples_bytes(uint8_t reg_addr, size_t data_length)
+    {
+        esp_err_t status { ESP_OK };
         return status;
     }
 

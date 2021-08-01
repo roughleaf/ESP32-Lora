@@ -10,6 +10,8 @@ namespace Gpio
         gpio_num_t _pin;
         bool _active_low;
 
+        esp_err_t _init (const gpio_num_t pin, const bool activeLow);
+
     public:
         GpioOutput(const gpio_num_t pin, const bool activeLow);
         GpioOutput(const gpio_num_t pin);

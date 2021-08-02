@@ -5,6 +5,33 @@ namespace WIFI
     Wifi::Wifi(void)
     {
         _get_mac();
+        _wifi_initialise();
+    }
+
+    // TODO Major refactor, move config to static classwide scope
+    // Add error checking afer each stage.
+    // Impliment the state machine
+    esp_err_t Wifi::_wifi_initialise()
+    {
+        esp_err_t status{ESP_OK};
+        wifi_init_config_t _cfg = WIFI_INIT_CONFIG_DEFAULT();
+        wifi_config_t sta_cfg;
+
+        memcpy(sta_cfg.sta.ssid, ssid, strlen(ssid)-1);
+        memcpy(sta_cfg.sta.password, password, strlen(password)-1);
+
+        sta_cfg.sta.threshold.authmode = WIFI_AUTH_OPEN;
+        sta_cfg.sta.pmf_cfg.capable = true;
+        sta_cfg.sta.pmf_cfg.required = false;
+
+
+        status |= esp_wifi_init(&_cfg); // Default Values
+        status |= esp_wifi_set_mode(WIFI_MODE_STA);         // Wifi Station mode
+        status |= esp_wifi_set_config(WIFI_IF_STA , &sta_cfg);
+        status |= esp_wifi_start();                         // start Wifi
+        status |= esp_wifi_connect();
+
+        return status;
     }
 
     char Wifi::mac_addr_cstr[]{};

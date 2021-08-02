@@ -7,6 +7,7 @@ namespace Ispi
         esp_err_t status = ESP_OK;
 
         _spi_peripheral = spi_peripheral;
+        // TODO Move this to wider scope to ensure the config persists.
         spi_bus_config_t spi_cfg{
             .mosi_io_num = pin_mosi,
             .miso_io_num = pin_miso,
@@ -25,7 +26,8 @@ namespace Ispi
     esp_err_t Spi::RegisterDevice(const uint8_t spi_mode, const int ss)
     {
         esp_err_t status = ESP_OK;
-
+        // TODO Move this to wider scope to ensure the config persists.
+        // TODO Move this to wider scope to ensure the config persists.
         spi_device_interface_config_t interface_cfg{
             .command_bits = 0, // Will not use dedicated command bits for this usecase
             .address_bits = 8, // For this usecase adding a 0 or 1 for read or write is simple enough

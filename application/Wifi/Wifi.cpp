@@ -17,8 +17,8 @@ namespace WIFI
         wifi_init_config_t _cfg = WIFI_INIT_CONFIG_DEFAULT();
         wifi_config_t sta_cfg;
 
-        memcpy(sta_cfg.sta.ssid, ssid, strlen(ssid)-1);
-        memcpy(sta_cfg.sta.password, password, strlen(password)-1);
+        memcpy(sta_cfg.sta.ssid, ssid, strlen(ssid));
+        memcpy(sta_cfg.sta.password, password, strlen(password));
 
         sta_cfg.sta.threshold.authmode = WIFI_AUTH_OPEN;
         sta_cfg.sta.pmf_cfg.capable = true;

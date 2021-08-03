@@ -15,6 +15,7 @@ namespace WIFI
         esp_err_t _get_mac(void);
         esp_err_t _wifi_initialise(void);
         static char mac_addr_cstr[13];
+        
 
     public:
         enum class state_e

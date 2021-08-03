@@ -7,42 +7,36 @@ namespace Ispi
         esp_err_t status = ESP_OK;
 
         _spi_peripheral = spi_peripheral;
-        // TODO Move this to wider scope to ensure the config persists.
-        spi_bus_config_t spi_cfg{
-            .mosi_io_num = pin_mosi,
-            .miso_io_num = pin_miso,
-            .sclk_io_num = pin_sclk,
-            .quadwp_io_num = -1,
-            .quadhd_io_num = -1,
-            .max_transfer_sz = 0,
-            .flags = 0,
-            .intr_flags = 0};
 
-            status |= spi_bus_initialize(spi_peripheral, &spi_cfg, SPI_DMA_CH_AUTO);
+        spi_transaction = {};
+        spi_transaction.tx_buffer = NULL;
+        spi_transaction.rx_buffer = NULL;
 
-            return status;
+        spi_bus_cfg = {};       // Make sure all values is initialized to zero
+        spi_bus_cfg.mosi_io_num = pin_mosi;
+        spi_bus_cfg.miso_io_num = pin_miso;
+        spi_bus_cfg.sclk_io_num = pin_sclk;
+        spi_bus_cfg.quadwp_io_num = -1;
+        spi_bus_cfg.quadhd_io_num = -1;
+
+        status |= spi_bus_initialize(spi_peripheral, &spi_bus_cfg, SPI_DMA_CH_AUTO);
+
+        return status;
     }
 
     esp_err_t Spi::RegisterDevice(const uint8_t spi_mode, const int ss)
     {
         esp_err_t status = ESP_OK;
-        // TODO Move this to wider scope to ensure the config persists.
-        // TODO Move this to wider scope to ensure the config persists.
-        spi_device_interface_config_t interface_cfg{
-            .command_bits = 0, // Will not use dedicated command bits for this usecase
-            .address_bits = 8, // For this usecase adding a 0 or 1 for read or write is simple enough
-            .dummy_bits = 0,
-            .mode = spi_mode,
-            .duty_cycle_pos = 0,
-            .cs_ena_pretrans = 0,
-            .cs_ena_posttrans = 0,
-            .clock_speed_hz = 80, // 80MHz/80 = 1MHz SPI speed
-            .input_delay_ns = 0,
-            .spics_io_num = ss, // IO pin 5 is my chip select
-            .flags = 0,
-            .queue_size = 5};
 
-        status |= spi_bus_add_device(_spi_peripheral, &interface_cfg, &_handle);
+        spi_interface_cfg = {};
+        spi_interface_cfg.command_bits = 0; // Will not use dedicated command bits for this usecase
+        spi_interface_cfg.address_bits = 8; // For this usecase adding a 0 or 1 for read or write is simple enough
+        spi_interface_cfg.mode = spi_mode;
+        spi_interface_cfg.clock_speed_hz = 80; // 80MHz/80 = 1MHz SPI speed
+        spi_interface_cfg.spics_io_num = ss; // IO pin 5 is my chip select
+        spi_interface_cfg.queue_size = 5;
+
+        status |= spi_bus_add_device(_spi_peripheral, &spi_interface_cfg, &_handle);
 
         return status;
     }
@@ -51,7 +45,7 @@ namespace Ispi
     {
         _transfer_byte(reg_addr & 0x7F, 0);
 
-        return _transaction.rx_data[0];
+        return spi_transaction.rx_data[0];
     }
 
     esp_err_t Spi::WriteRegister(uint8_t reg_addr, uint8_t reg_data)
@@ -67,11 +61,12 @@ namespace Ispi
     {
         esp_err_t status { ESP_OK };
 
-        _transaction.flags = SPI_TRANS_USE_RXDATA | SPI_TRANS_USE_TXDATA;
-        _transaction.addr = reg_addr;
-        _transaction.rx_data[0] = data;
+        spi_transaction.flags = SPI_TRANS_USE_RXDATA | SPI_TRANS_USE_TXDATA;
+        spi_transaction.length = 8;
+        spi_transaction.addr = reg_addr;
+        spi_transaction.tx_data[0] = data;
 
-        status |= spi_device_transmit(_handle, &_transaction);
+        status |= spi_device_transmit(_handle, &spi_transaction);
 
         return status;
     }

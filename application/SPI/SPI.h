@@ -14,18 +14,13 @@ namespace Ispi
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
 
     private:
-        spi_host_device_t _spi_peripheral;       
-        spi_device_handle_t _handle;
-        spi_transaction_t _transaction{
-            .flags = 0,
-            .cmd = 0,           // Read, Not used
-            .addr = 0,          // Ensure write operation
-            .length = 8,
-            .rxlength = 0,      // 0 defaults to length
-            .user = 0,
-            .tx_buffer = NULL,
-            .rx_buffer = NULL};
+        spi_bus_config_t spi_bus_cfg;
+        spi_device_interface_config_t spi_interface_cfg;
+
+        spi_host_device_t _spi_peripheral{};       
+        spi_device_handle_t _handle{};
         uint8_t _ss;
+        spi_transaction_t spi_transaction;
 
         esp_err_t _transfer_byte(uint8_t reg_addr, uint8_t data);
         esp_err_t _transfer_multiples_bytes(uint8_t reg_addr, size_t data_length);

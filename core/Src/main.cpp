@@ -47,7 +47,7 @@ void Main::run(void)
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
     std::cout << "Mac Address: " << testMac.get_mac() << std::endl;;
-    //LoraDev.WriteRegister(0x01, 0x09);
+    //LoraDev.WriteRegister(0x01, 0x0B);
     std::cout << "Lora SX1278 Register 1: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
     std::cout << "Lora SX1278 Revision  : " << (int)LoraDev.ReadRegister(0x42) << std::endl;
 }

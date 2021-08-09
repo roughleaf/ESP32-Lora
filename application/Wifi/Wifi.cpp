@@ -1,10 +1,25 @@
 #include "Wifi.h"
 
+#define LOG_TAG "WIFI"
+
 namespace WIFI
 {
+    // Statics
+    char Wifi::mac_addr_cstr[]{};
+    std::mutex Wifi::first_call_mutx;
+    bool Wifi::first_call{true};
+
+    constexpr static const char *ssid{"TestGuest"};
+    constexpr static const char *password{"00000000"};
+
     Wifi::Wifi(void)
     {
-        _get_mac();
+        std::lock_guard<std::mutex> guard(first_call_mutx);
+        if(first_call)
+        {
+            if(ESP_OK != _get_mac()) esp_restart();
+            first_call = false;
+        }
         _wifi_initialise();
     }
 
@@ -24,23 +39,25 @@ namespace WIFI
         sta_cfg.sta.pmf_cfg.capable = true;
         sta_cfg.sta.pmf_cfg.required = false;
 
-
         status |= esp_wifi_init(&_cfg); // Default Values
-        status |= esp_wifi_set_mode(WIFI_MODE_STA);         // Wifi Station mode
-        status |= esp_wifi_set_config(WIFI_IF_STA , &sta_cfg);
-        status |= esp_wifi_start();                         // start Wifi
+        ESP_LOGI(LOG_TAG, "Wifi Init");
+        status |= esp_wifi_set_mode(WIFI_MODE_STA); // Wifi Station mode
+        ESP_LOGI(LOG_TAG, "WiFi STA Mode");
+        status |= esp_wifi_set_config(WIFI_IF_STA, &sta_cfg);
+        ESP_LOGI(LOG_TAG, "WiFi STA Config");
+        status |= esp_wifi_start(); // start Wifi
+        ESP_LOGI(LOG_TAG, "WiFi Start");
         status |= esp_wifi_connect();
+        ESP_LOGI(LOG_TAG, "WiFi Connect");
 
         return status;
     }
-
-    char Wifi::mac_addr_cstr[]{};
 
     esp_err_t Wifi::_get_mac(void)
     {
         uint8_t mac_byte_buffer[6]{};
 
-        const esp_err_t status {esp_efuse_mac_get_default(mac_byte_buffer)};
+        const esp_err_t status{esp_efuse_mac_get_default(mac_byte_buffer)};
 
         if (ESP_OK == status)
         {

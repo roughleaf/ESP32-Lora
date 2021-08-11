@@ -28,7 +28,7 @@ esp_err_t Main::setup(void)
     ESP_LOGI(LOG_TAG, "Setup");
     std::cout << "Status: " << status << std::endl;
     LoraDev.Init();
-    //testMac.init();
+    testMac.init();
     return status;
 }
     

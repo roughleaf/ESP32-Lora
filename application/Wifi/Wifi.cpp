@@ -51,6 +51,22 @@ namespace WIFI
                 status = esp_wifi_init(&wifi_init_cfg);
             }
 
+            if (ESP_OK == status)
+            {
+                memcpy(wifi_cfg.sta.ssid, ssid,
+                       std::min(strlen(ssid), sizeof(wifi_cfg.sta.ssid)));
+
+                memcpy(wifi_cfg.sta.password, password,
+                       std::min(strlen(password), sizeof(wifi_cfg.sta.password)));
+
+                wifi_cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+                wifi_cfg.sta.pmf_cfg.capable = true;
+                wifi_cfg.sta.pmf_cfg.required = false;
+
+                esp_wifi_set_mode(WIFI_MODE_STA);
+
+                status = esp_wifi_set_config(WIFI_IF_STA, &wifi_cfg);
+            }
         }
         else if (state_e::ERROR == _state)
         {
@@ -66,7 +82,8 @@ namespace WIFI
     esp_err_t Wifi::init(void)
     {
         esp_err_t status{ESP_OK};
-        wifi_init_config_t _cfg = WIFI_INIT_CONFIG_DEFAULT();
+        status = _init();
+        /*wifi_init_config_t _cfg = WIFI_INIT_CONFIG_DEFAULT();
         wifi_config_t sta_cfg;
 
         memcpy(sta_cfg.sta.ssid, ssid, strlen(ssid));
@@ -81,7 +98,7 @@ namespace WIFI
         status |= esp_wifi_set_mode(WIFI_MODE_STA); // Wifi Station mode
         ESP_LOGI(LOG_TAG, "WiFi STA Mode");
         status |= esp_wifi_set_config(WIFI_IF_STA, &sta_cfg);
-        ESP_LOGI(LOG_TAG, "WiFi STA Config");
+        ESP_LOGI(LOG_TAG, "WiFi STA Config");*/
         status |= esp_wifi_start(); // start Wifi
         ESP_LOGI(LOG_TAG, "WiFi Start");
         status |= esp_wifi_connect();

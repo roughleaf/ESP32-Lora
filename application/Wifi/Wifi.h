@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstring>
+#include <algorithm>
 #include <mutex>
 
 #include "esp_wifi.h"
@@ -18,8 +19,8 @@ namespace WIFI
 {
     class Wifi
     {
-        constexpr static const char *ssid{"TestGuest"};
-        constexpr static const char *password{"00000000"};
+        constexpr static const char* ssid{"TestGuest"};
+        constexpr static const char* password{"00000000"};
 
     public:
         enum class state_e
@@ -53,6 +54,8 @@ namespace WIFI
 
     private:
         static esp_err_t _init(void);
+        static wifi_init_config_t wifi_init_cfg;
+        static wifi_config_t wifi_cfg;
 
         static void state_machine(void);
         static state_e _state;
@@ -63,10 +66,6 @@ namespace WIFI
         static char mac_addr_cstr[13];
 
         static std::mutex init_mutx;
-
-        static wifi_init_config_t wifi_init_cfg;
-        static wifi_config_t wifi_cfg;
-
     }; // Wifi class
 
 } // namaspace WIFI

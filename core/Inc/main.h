@@ -16,6 +16,6 @@ public:
     void run(void);
 
     Gpio::GpioOutput led { GPIO_NUM_14 };
-    WIFI::Wifi testMac;
+    WIFI::Wifi Wifi;
     Lora::Lora LoraDev;
 };

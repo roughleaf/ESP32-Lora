@@ -27,7 +27,6 @@ namespace WIFI
         {
             NOT_INITIALISED,
             INITIALISED,
-            WAITING_FOR_CREDENTIALS,
             READY_TO_CONNECT,
             CONNECTING,
             WAITING_FOR_IP,
@@ -45,8 +44,8 @@ namespace WIFI
         Wifi& operator=(const Wifi&)    = default;
         Wifi& operator=(Wifi&&)         = default;
 
-        esp_err_t init(void);  // Setup the stuff
-        esp_err_t begin(void); // Start Wifi, connect, etc...
+        esp_err_t Init(void);  // Setup the stuff
+        esp_err_t Begin(void); // Start Wifi, connect, etc...
 
         state_e get_state(void);
 
@@ -58,6 +57,14 @@ namespace WIFI
         static wifi_config_t wifi_cfg;
 
         static void state_machine(void);
+
+        static void event_handler(void *arg, esp_event_base_t event_base,
+                                  int32_t event_id, void *event_data);
+        static void wifi_event_handler(void *arg, esp_event_base_t event_base,
+                                  int32_t event_id, void *event_data);
+        static void ip_event_handler(void *arg, esp_event_base_t event_base,
+                                  int32_t event_id, void *event_data);                                                    
+
         static state_e _state;
 
         // Get default MAC from API and convert to ASCII HEX
@@ -65,7 +72,9 @@ namespace WIFI
 
         static char mac_addr_cstr[13];
 
-        static std::mutex init_mutx;
+        static std::mutex init_mutx;        ///< Initialisation Mutex
+        static std::mutex connect_mutx;     ///< Connect Mutex
+        static std::mutex state_mutx;       ///< State change Mutex
     }; // Wifi class
 
 } // namaspace WIFI

@@ -29,27 +29,26 @@ esp_err_t Main::setup(void)
     std::cout << "Status: " << status << std::endl;
     LoraDev.Init();
     Wifi.Init();
-    Wifi.Begin();
+    //Wifi.Begin();
+
+    std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
+
     return status;
 }
     
 void Main::run(void)
 {
-    std::string tst = "Test String";
-
-    ESP_LOGI(LOG_TAG, "Hello World");
-
     led.High();
-    ESP_LOGI(LOG_TAG, "LED on");
+    //ESP_LOGI(LOG_TAG, "LED on");
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    ESP_LOGI(LOG_TAG, "LED off");
+    //ESP_LOGI(LOG_TAG, "LED off");
     led.Low();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
-    std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;;
+    //std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
     //LoraDev.WriteRegister(0x01, 0x0B);
-    std::cout << "Lora SX1278 Register 1: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
-    std::cout << "Lora SX1278 Revision  : " << (int)LoraDev.ReadRegister(0x42) << std::endl;
+    //std::cout << "Lora SX1278 Register 1: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
+    //std::cout << "Lora SX1278 Revision  : " << (int)LoraDev.ReadRegister(0x42) << std::endl;
 }

@@ -19,6 +19,8 @@ namespace WIFI
 {
     class Wifi
     {
+        constexpr static const char* _log_tag{"WiFI"};
+
         constexpr static const char* ssid{"TestGuest"};
         constexpr static const char* password{"00000000"};
 
@@ -47,7 +49,7 @@ namespace WIFI
         esp_err_t Init(void);  // Setup the stuff
         esp_err_t Begin(void); // Start Wifi, connect, etc...
 
-        state_e get_state(void);
+        constexpr const state_e& get_state(void) { return _state; }
 
         constexpr static const char *get_mac(void) { return mac_addr_cstr; }
 

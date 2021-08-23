@@ -3,7 +3,7 @@
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
 #include "Gpio.h"
-namespace Ispi
+namespace SPI
 {
     class Spi
     {

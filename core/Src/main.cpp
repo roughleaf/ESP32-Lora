@@ -26,8 +26,9 @@ esp_err_t Main::setup(void)
 {
     esp_err_t status{ESP_OK};
     ESP_LOGI(LOG_TAG, "Setup");
-    std::cout << "Status: " << status << std::endl;
-    LoraDev.Init();
+
+    Spi_3.Init(SPI3_HOST, spi_3_miso, spi_3_mosi, spi_3_sclk);
+    Lora.Init(&Spi_3);
     Wifi.Init();
     //Wifi.Begin();
 
@@ -49,6 +50,6 @@ void Main::run(void)
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
     //std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
     //LoraDev.WriteRegister(0x01, 0x0B);
-    //std::cout << "Lora SX1278 Register 1: " << (int)LoraDev.ReadRegister(0x01) << std::endl;
-    //std::cout << "Lora SX1278 Revision  : " << (int)LoraDev.ReadRegister(0x42) << std::endl;
+    std::cout << "Lora SX1278 Operating Mode: " << (int)Lora.ReadRegister(LORA::RegOpMode) << std::endl;
+    std::cout << "Lora SX1278 Revision  : " << (int)Lora.ReadRegister(LORA::RegVersion1) << std::endl;
 }

@@ -31,6 +31,15 @@ namespace Gpio
         _init(pin, false);
     }
 
+    GpioOutput::GpioOutput(void)
+    {        
+    }
+
+    esp_err_t GpioOutput::Init(const gpio_num_t pin, const bool activeLow)
+    {
+        return _init(pin, activeLow);
+    }
+
     esp_err_t GpioOutput::High(void)
     {
         return gpio_set_level(_pin, 1);

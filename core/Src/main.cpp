@@ -28,7 +28,7 @@ esp_err_t Main::setup(void)
     ESP_LOGI(LOG_TAG, "Setup");
 
     Spi_3.Init(SPI3_HOST, spi_3_miso, spi_3_mosi, spi_3_sclk);
-    Lora.Init(&Spi_3);
+    Lora.SpiSetup(&Spi_3, lora_ss_pin, lora_reset_pin);
     Wifi.Init();
     //Wifi.Begin();
 

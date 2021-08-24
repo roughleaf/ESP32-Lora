@@ -2,14 +2,15 @@
 
 namespace LORA
 {
-    esp_err_t Lora::Init(SPI::Spi* l_spi)
+    esp_err_t Lora::SpiSetup(SPI::Spi* l_spi, const int ss, gpio_num_t reset_pin)
     {
         esp_err_t status{ESP_OK};
 
         _spi = l_spi;
+        _reset.Init(reset_pin, true);
 
         //status |= _spi.Init(SPI3_HOST, 19, 23, 18);
-        status |= _spi->RegisterDevice(0, 5);
+        status |= _spi->RegisterDevice(0, ss);
 
         _reset.Inactive();
 

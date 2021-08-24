@@ -16,6 +16,10 @@ public:
     constexpr static int spi_3_mosi = 23;
     constexpr static int spi_3_sclk = 18;
 
+    constexpr static int lora_ss_pin = 5;
+
+    constexpr static gpio_num_t lora_reset_pin = GPIO_NUM_4;
+
     esp_err_t setup(void);
     void run(void);
 

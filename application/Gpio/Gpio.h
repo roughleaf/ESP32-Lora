@@ -15,6 +15,8 @@ namespace Gpio
     public:
         GpioOutput(const gpio_num_t pin, const bool activeLow);
         GpioOutput(const gpio_num_t pin);
+        GpioOutput(void);
+        esp_err_t Init (const gpio_num_t pin, const bool activeLow);
         esp_err_t High(void);
         esp_err_t Low(void);
         esp_err_t Active(void);

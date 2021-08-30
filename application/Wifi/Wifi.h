@@ -49,7 +49,7 @@ namespace WIFI
         esp_err_t Init(void);  // Setup the stuff
         esp_err_t Begin(void); // Start Wifi, connect, etc...
 
-        constexpr const state_e& get_state(void) { return _state; }
+        constexpr static const state_e& get_state(void) { return _state; }
 
         constexpr static const char *get_mac(void) { return mac_addr_cstr; }
 

@@ -6,12 +6,15 @@
 #include "Gpio.h"
 #include "Wifi.h"
 #include "Lora.h"
+#include "SntpTime.h"
 #include <string>
 #include <iostream>
 
 class Main final
 {
 public:
+    Main(void) : SntpTime {SNTP::Sntp::get_instance()} {}
+
     constexpr static int spi_3_miso = 19;
     constexpr static int spi_3_mosi = 23;
     constexpr static int spi_3_sclk = 18;
@@ -27,4 +30,5 @@ public:
     WIFI::Wifi Wifi;
     SPI::Spi Spi_3;
     LORA::Lora Lora;
+    SNTP::Sntp& SntpTime;
 };

@@ -31,6 +31,7 @@ esp_err_t Main::setup(void)
     Lora.SpiSetup(&Spi_3, lora_ss_pin, lora_reset_pin);
     Wifi.Init();
     SntpTime.Init();
+    AppTimer.Init(0, 0, 1);
 
     std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
 

@@ -7,6 +7,7 @@
 #include "Wifi.h"
 #include "Lora.h"
 #include "SntpTime.h"
+#include "AppTimer.h"
 #include <string>
 #include <iostream>
 
@@ -31,4 +32,5 @@ public:
     SPI::Spi Spi_3;
     LORA::Lora Lora;
     SNTP::Sntp& SntpTime;
+    TIMER::AppTimer AppTimer;
 };

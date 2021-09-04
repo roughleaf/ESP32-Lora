@@ -16,14 +16,14 @@ extern "C" void app_main(void)
 
     ESP_ERROR_CHECK(my_main.setup());
 
-    while(true)
+    while (true)
     {
         my_main.run();
     }
 }
 
 esp_err_t Main::setup(void)
-{ 
+{
     esp_err_t status{ESP_OK};
     ESP_LOGI(LOG_TAG, "Setup");
 
@@ -31,26 +31,33 @@ esp_err_t Main::setup(void)
     Lora.SpiSetup(&Spi_3, lora_ss_pin, lora_reset_pin);
     Wifi.Init();
     SntpTime.Init();
-    AppTimer.Init(0, 0, 1);
+    AppTimer.Init(0, 0, 1, &apptimer_event_handler);
 
     std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
 
     return status;
 }
-    
+
 void Main::run(void)
 {
-    led.High();
+    //led.On();
     //ESP_LOGI(LOG_TAG, "LED on");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    //vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     //ESP_LOGI(LOG_TAG, "LED off");
-    led.Low();
+    //led.Off();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
     //std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
     //LoraDev.WriteRegister(0x01, 0x0B);
-    std::cout << "Lora SX1278 Operating Mode: " << (int)Lora.ReadRegister(LORA::RegOpMode) << std::endl;
-    std::cout << "Lora SX1278 Revision  : " << (int)Lora.ReadRegister(LORA::RegVersion1) << std::endl;
+    //std::cout << "Lora SX1278 Operating Mode: " << (int)Lora.ReadRegister(LORA::RegOpMode) << std::endl;
+    //std::cout << "Lora SX1278 Revision  : " << (int)Lora.ReadRegister(LORA::RegVersion1) << std::endl;
+}
+
+void Main::apptimer_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
+{
+    ESP_LOGI(LOG_TAG, "AppTimer Event triggered from main");
+    //led.Toggle();
+    my_main.led.Toggle();
 }

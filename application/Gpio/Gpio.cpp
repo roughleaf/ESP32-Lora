@@ -40,24 +40,22 @@ namespace Gpio
         return _init(pin, activeLow);
     }
 
-    esp_err_t GpioOutput::High(void)
+    esp_err_t GpioOutput::On(void)
     {
+        _level = true;;
         return gpio_set_level(_pin, 1);
     }
 
-    esp_err_t GpioOutput::Low(void)
+    esp_err_t GpioOutput::Off(void)
     {
+        _level = false;
         return gpio_set_level(_pin, 0);
     }
 
-    esp_err_t GpioOutput::Active(void)
+    esp_err_t GpioOutput::Toggle(void)
     {
-        return gpio_set_level(_pin, _active_low ? false : true);
-    }
-
-    esp_err_t GpioOutput::Inactive(void)
-    {
-        return gpio_set_level(_pin, _active_low ? true : false);
+        _level = _level ? false : true;
+        return gpio_set_level(_pin, _level ? true : false);
     }
 
 } // namespace Gpio

@@ -26,6 +26,7 @@ public:
 
     esp_err_t setup(void);
     void run(void);
+    static void apptimer_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
     Gpio::GpioOutput led { GPIO_NUM_14 };
     WIFI::Wifi Wifi;

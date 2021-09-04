@@ -12,7 +12,7 @@ namespace LORA
         //status |= _spi.Init(SPI3_HOST, 19, 23, 18);
         status |= _spi->RegisterDevice(0, ss);
 
-        _reset.Inactive();
+        _reset.Off();
 
         return status;
     }

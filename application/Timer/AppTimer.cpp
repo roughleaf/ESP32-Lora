@@ -3,19 +3,21 @@
 #define LOG_LEVEL_LOCAL ESP_LOG_VERBOSE
 #include "esp_log.h"
 
-#define TIMER_DIVIDER (16)                                    //  Hardware timer clock divider
-#define TIMER_SCALE (TIMER_BASE_CLK / TIMER_DIVIDER) // convert counter value to milliseconds
+#define TIMER_DIVIDER (16)                           //  Hardware timer clock divider
+#define TIMER_SCALE (TIMER_BASE_CLK / TIMER_DIVIDER) // convert counter value to seconds
 
 namespace TIMER
 {
+    ESP_EVENT_DEFINE_BASE(TIMER_EVENTS);
+
     bool AppTimer::apptimer_isr_callback(void *args)
     {
         //ESP_LOGI(_log_tag, "AppTimer Callback ISR called");
-
+        esp_event_isr_post(TIMER_EVENTS, TIMER_EVENT_ISR, NULL, 0, NULL);
         return true;
     }
 
-    esp_err_t AppTimer::Init(int group, int timer, int timer_interval_ms)
+    esp_err_t AppTimer::Init(int group, int timer, int timer_interval_ms, esp_event_handler_t timer_e_h)
     {
         esp_err_t status{ESP_OK};
 
@@ -43,6 +45,8 @@ namespace TIMER
 
         status |= timer_isr_callback_add(_group, _timer, apptimer_isr_callback, nullptr, 0);
         ESP_LOGI(_log_tag, "timer_isr_callback_add");
+
+        status |= esp_event_handler_instance_register(TIMER_EVENTS, TIMER_EVENT_ISR, timer_e_h, 0, NULL);
 
         status |= timer_start(_group, _timer);
         ESP_LOGI(_log_tag, "timer_start");

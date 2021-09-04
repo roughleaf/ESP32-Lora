@@ -9,6 +9,7 @@ namespace Gpio
     private:
         gpio_num_t _pin;
         bool _active_low;
+        bool _level = false;
 
         esp_err_t _init (const gpio_num_t pin, const bool activeLow);
 
@@ -21,6 +22,9 @@ namespace Gpio
         esp_err_t Low(void);
         esp_err_t Active(void);
         esp_err_t Inactive(void);
+        esp_err_t On(void);
+        esp_err_t Off(void);
+        esp_err_t Toggle(void);
 
     }; // GpioOutput Class
 } // namespace Gpio

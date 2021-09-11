@@ -42,7 +42,6 @@ namespace WIFI
                 std::lock_guard<std::mutex> state_guard(state_mutx);
                 _state = state_e::READY_TO_CONNECT;
                 ESP_LOGI(_log_tag, "Ready to connect");
-                esp_wifi_connect();
                 break;
             }
 
@@ -51,6 +50,14 @@ namespace WIFI
                 std::lock_guard<std::mutex> state_guard(state_mutx);
                 _state = state_e::WAITING_FOR_IP;
                 ESP_LOGI(_log_tag, "Waiting for IP");
+                break;
+            }
+
+            case WIFI_EVENT_STA_DISCONNECTED:
+            {
+                std::lock_guard<std::mutex> state_guard(state_mutx);
+                _state = state_e::DISCONNECTED;
+                ESP_LOGI(_log_tag, "Disconnected from AP");
                 break;
             }
 
@@ -93,7 +100,7 @@ namespace WIFI
         }
     }
 
-    // I'm not going to call this function, I'm going to use events
+    // This function will only be called from the AppTimer event handler
     esp_err_t Wifi::Begin(void)
     {
         std::lock_guard<std::mutex> connect_guard(connect_mutx);
@@ -104,6 +111,7 @@ namespace WIFI
         switch (_state)
         {
         case state_e::READY_TO_CONNECT:
+        case state_e::DISCONNECTED:
             status = esp_wifi_connect();
             if (ESP_OK == status)
             {
@@ -116,7 +124,6 @@ namespace WIFI
             break;
         case state_e::NOT_INITIALISED:
         case state_e::INITIALISED:
-        case state_e::DISCONNECTED:
         case state_e::ERROR:
             ESP_LOGI(LOG_TAG, "Wifi Begin Fail");
             status = ESP_FAIL;

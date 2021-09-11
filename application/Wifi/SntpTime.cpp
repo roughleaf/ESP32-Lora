@@ -34,7 +34,7 @@ namespace SNTP
             sntp_setservername(1, "pool.ntp.com");
 
             sntp_set_time_sync_notification_cb(&callback_on_ntp_update);
-            sntp_set_sync_interval(/*60**/ 60 * 1000); // TODO change intervals to 1 hour
+            sntp_set_sync_interval(60* 60 * 1000); // TODO change intervals to 1 hour
 
             sntp_init();
 

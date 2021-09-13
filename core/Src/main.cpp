@@ -4,7 +4,7 @@
 #include "esp_log.h"
 #define LOG_TAG "MAIN"
 
-static Main my_main;
+static Main App;
 
 extern "C" void app_main(void)
 {
@@ -14,11 +14,11 @@ extern "C" void app_main(void)
     ESP_LOGI(LOG_TAG, "Initialising NVS");
     ESP_ERROR_CHECK(nvs_flash_init());
 
-    ESP_ERROR_CHECK(my_main.setup());
+    ESP_ERROR_CHECK(App.setup());
 
     while (true)
     {
-        my_main.run();
+        App.run();
     }
 }
 
@@ -51,66 +51,42 @@ void Main::run(void)
 
 void Main::apptimer_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
 {
-    //TODO change to switch/case
+    App.wifiState = App.Wifi.get_state();
 
-    // Wifi LED toggle between red and orange
-    if (WIFI::Wifi::state_e::READY_TO_CONNECT == my_main.Wifi.get_state() || WIFI::Wifi::state_e::DISCONNECTED == my_main.Wifi.get_state())
+    switch (App.wifiState)
     {
+    case WIFI::Wifi::state_e::READY_TO_CONNECT:
+    case WIFI::Wifi::state_e::DISCONNECTED:
         ESP_LOGI(LOG_TAG, "Trying to connect");
-        my_main.led1Red.On();
-        my_main.led1Green.Toggle();
-        my_main.Wifi.Begin();
-    }
-
-    else if (WIFI::Wifi::state_e::CONNECTING == my_main.Wifi.get_state())
-    {
-        my_main.led1Red.On();
-        my_main.led1Green.Toggle();
+        App.led1Red.On();
+        App.led1Green.Toggle();
+        App.Wifi.Begin();
+        break;
+    case WIFI::Wifi::state_e::CONNECTING:
+        App.led1Red.On();
+        App.led1Green.Toggle();
         ESP_LOGI(LOG_TAG, "Trying to connect");
-    }
-
-    // Wifi LED toggle between green and orange
-    else if (WIFI::Wifi::state_e::WAITING_FOR_IP == my_main.Wifi.get_state())
-    {
+        break;
+    case WIFI::Wifi::state_e::WAITING_FOR_IP:
         ESP_LOGI(LOG_TAG, "Waiting for IP");
-        my_main.led1Red.Toggle();
-        my_main.led1Green.On();
-    }
-
-    // Wifi Status LED RED and TODO Error handling
-    else if (WIFI::Wifi::state_e::ERROR == my_main.Wifi.get_state())
-    {
+        App.led1Red.Toggle();
+        App.led1Green.On();
+        break;
+    case WIFI::Wifi::state_e::ERROR:
         ESP_LOGI(LOG_TAG, "Error");
-        my_main.led1Red.On();
-        my_main.led1Green.Off();
-        //my_main.Wifi.Begin();
-    }
-
-    // Wifi Status LED Green
-    else if (WIFI::Wifi::state_e::CONNECTED == my_main.Wifi.get_state())
-    {
+        App.led1Red.On();
+        App.led1Green.Off();
+        break;
+    case WIFI::Wifi::state_e::CONNECTED:
         ESP_LOGI(LOG_TAG, "Connected");
-        my_main.led1Red.Off();
-        my_main.led1Green.On();
-    }
-
-    // Wifi LED Orange
-    else
-    {
-        if (WIFI::Wifi::state_e::NOT_INITIALISED == my_main.Wifi.get_state())
-        {
-            ESP_LOGI(LOG_TAG, "Not Initialised State");
-        }
-        if (WIFI::Wifi::state_e::INITIALISED == my_main.Wifi.get_state())
-        {
-            ESP_LOGI(LOG_TAG, "Initialised State");
-        }
-        else
-        {
-            ESP_LOGI(LOG_TAG, "Unhandeled State");
-        }
-        my_main.led1Red.On();
-        my_main.led1Green.On();
-    }
-    //my_main.led.Toggle();
+        App.led1Red.Off();
+        App.led1Green.On();
+        break;
+    case WIFI::Wifi::state_e::NOT_INITIALISED:
+        ESP_LOGI(LOG_TAG, "Not Initialised State");
+        break;
+    case WIFI::Wifi::state_e::INITIALISED:
+        ESP_LOGI(LOG_TAG, "Initialised State");
+        break;
+    }    
 }

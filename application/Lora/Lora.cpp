@@ -17,6 +17,20 @@ namespace LORA
         return status;
     }
 
+    // Pseudo code to initialise
+    int Lora::Init()
+    {
+        WriteRegister(RegOpMode, 0x00);         // Sleep mode
+        WriteRegister(RegOpMode, 0x01 << 7);    // Lora Mode
+
+        // Spreading Factor 6. Highest datarate for shortest time on air. See datasheet Page 27
+        WriteRegister(Lora_RegModemConfig2, 0x06 << 4);     // Set SpreadingFactor = 6
+        WriteRegister(Lora_RegModemConfig1, (0x08 << 4) | (0x02 << 1) | 0x01);  // Set bandwidth to 250Khz, error code rate 4/6, Implicit header mode        
+        WriteRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
+        WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.
+        return 0;
+    }
+
     uint8_t Lora::ReadRegister(uint8_t reg_addr)
     {        
         return _spi->ReadRegister(reg_addr);

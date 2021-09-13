@@ -134,6 +134,7 @@ namespace LORA
         SPI::Spi *_spi;
 
     public:
+        int Init(void);
         esp_err_t SpiSetup(SPI::Spi *l_spi, const int ss, gpio_num_t reset_pin);
         uint8_t ReadRegister(uint8_t reg_addr);
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);

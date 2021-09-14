@@ -130,11 +130,13 @@ namespace LORA
     private:
         spi_device_handle_t _spi_handle;
         Gpio::GpioOutput _reset;
-        //SPI::Spi _spiLora;
         SPI::Spi *_spi;
 
+        uint64_t _frequency{};
+
     public:
-        int Init(void);
+        esp_err_t Init(void);
+        esp_err_t SetFrequency(uint64_t frequency);
         esp_err_t SpiSetup(SPI::Spi *l_spi, const int ss, gpio_num_t reset_pin);
         uint8_t ReadRegister(uint8_t reg_addr);
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);

@@ -18,17 +18,40 @@ namespace LORA
     }
 
     // Pseudo code to initialise
-    int Lora::Init()
+    esp_err_t Lora::Init()
     {
-        WriteRegister(RegOpMode, 0x00);         // Sleep mode
-        WriteRegister(RegOpMode, 0x01 << 7);    // Lora Mode
+        esp_err_t status { ESP_OK };
+
+        status |= WriteRegister(RegOpMode, 0x00);         // Sleep mode
+        status |= WriteRegister(RegOpMode, 0x01 << 7);    // Lora Mode
+
+        // TODO RegDioMapping1, 0x00 << 7 = RxDone, 0x01 << 7 = TX Done
+
 
         // Spreading Factor 6. Highest datarate for shortest time on air. See datasheet Page 27
-        WriteRegister(Lora_RegModemConfig2, 0x06 << 4);     // Set SpreadingFactor = 6
-        WriteRegister(Lora_RegModemConfig1, (0x08 << 4) | (0x02 << 1) | 0x01);  // Set bandwidth to 250Khz, error code rate 4/6, Implicit header mode        
-        WriteRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
-        WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.
-        return 0;
+        status |= WriteRegister(Lora_RegModemConfig2, 0x06 << 4 | 0x01 << 2);     // Set SpreadingFactor = 6, CRC on
+        status |= WriteRegister(Lora_RegModemConfig1, (0x08 << 4) | (0x02 << 1) | 0x01);  // Set bandwidth to 250Khz, error code rate 4/6, Implicit header mode        
+        status |= WriteRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
+        status |= WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.
+
+        // RegPayloadLength
+        status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TX done and RX done IRQs enabled
+        // RegIrqFlags
+        return status;
+    }
+
+    esp_err_t Lora::SetFrequency(uint64_t frequency)
+    {
+        esp_err_t status { ESP_OK };
+        _frequency = frequency;
+
+        uint64_t frf = (frequency << 19) / 32000000;
+
+        status |= WriteRegister(RegFrfMsb, frf >> 16);
+        status |= WriteRegister(RegFrfMid, frf >> 8);
+        status |= WriteRegister(RegFrfLsb, frf >> 0);
+
+        return status;
     }
 
     uint8_t Lora::ReadRegister(uint8_t reg_addr)
@@ -48,6 +71,10 @@ namespace LORA
     esp_err_t Lora::TransmitString(const char *data_tx)
     {
         esp_err_t status{ESP_OK};
+        // TODO Set FifoPtrAddr to FifoTxPtrBase.
+        // TODO Write PayloadLength bytes to the FIFO (RegFifo)
+        // TODO Set Mode to TX
+        // TODO Check and handle TX done interrupt
 
         return status;
     }

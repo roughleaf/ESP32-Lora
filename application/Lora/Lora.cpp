@@ -25,8 +25,7 @@ namespace LORA
         status |= WriteRegister(RegOpMode, 0x00);         // Sleep mode
         status |= WriteRegister(RegOpMode, 0x01 << 7);    // Lora Mode
 
-        // TODO RegDioMapping1, 0x00 << 7 = RxDone, 0x01 << 7 = TX Done
-
+        _setInterruptTxRx(rx_int); // Initialise with RxDone interrupt enabled
 
         // Spreading Factor 6. Highest datarate for shortest time on air. See datasheet Page 27
         status |= WriteRegister(Lora_RegModemConfig2, 0x06 << 4 | 0x01 << 2);     // Set SpreadingFactor = 6, CRC on
@@ -34,10 +33,69 @@ namespace LORA
         status |= WriteRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
         status |= WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.
 
+        status |= SetFrequency(433000000); // Set to 433Mhz
+
         // RegPayloadLength
-        status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TX done and RX done IRQs enabled
+        status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
         // RegIrqFlags
+
+        if (_led_enabled)
+        {
+            if(ESP_OK == status)
+            {
+            _led_green.On(); // Set LED on when LoRa Init Done, for debug only;
+            _led_red.Off();
+            }
+            else
+            {
+                _led_green.Off(); // Set LED on when LoRa Init Done, for debug only;
+                _led_red.On();
+            }
+        }
+
         return status;
+    }
+
+    esp_err_t Lora::_setInterruptTxRx(lora_interrupt_t dio0)
+    {
+        esp_err_t status{ESP_OK};
+
+        switch (dio0)
+        {
+        case rx_int:
+            status = WriteRegister(RegDioMapping1, Lora_RxDone);
+            break;
+        case lora_interrupt_t::tx_int:
+            status = WriteRegister(RegDioMapping1, Lora_TxDone);
+            break;
+        }
+
+        return status;
+    }
+
+    esp_err_t Lora::LedSetup(gpio_num_t green_pin, gpio_num_t red_pin)
+    {
+        esp_err_t status{ESP_OK};
+        // TODO Setup the interrupt functions for each
+        status = _led_red.Init(red_pin);
+        status |= _led_green.Init(green_pin);
+
+        return status;
+    }
+
+    void Lora::LedEnable(bool led_enabled)
+    {
+        _led_enabled = led_enabled;
+    }
+
+    esp_err_t Lora::IrqSetup(gpio_num_t irq_pin)
+    {
+        return _lora_irq.Init(irq_pin);
+    }
+
+    void Lora::IrqEnable(bool irq_enabled)
+    {
+        _irq_enabled = irq_enabled;
     }
 
     esp_err_t Lora::SetFrequency(uint64_t frequency)

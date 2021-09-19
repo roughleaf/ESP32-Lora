@@ -125,19 +125,35 @@ namespace LORA
     constexpr static uint8_t Lora_RegHighBwOptimize2 = 0x3A;
     constexpr static uint8_t Lora_RegInvertIQ2 = 0x3B;
 
+    // DIO Modes
+    constexpr static uint8_t Lora_RxDone = 0x00 << 6;
+    constexpr static uint8_t Lora_TxDone = 0x01 << 6;
+
     class Lora
     {
     private:
+        enum lora_interrupt_t {tx_int, rx_int} _dio0;
+
         spi_device_handle_t _spi_handle;
         Gpio::GpioOutput _reset;
+        Gpio::GpioOutput _led_green;
+        Gpio::GpioOutput _led_red;
+        Gpio::GpioInput _lora_irq;
         SPI::Spi *_spi;
+        esp_err_t _setInterruptTxRx(lora_interrupt_t dio0);
 
         uint64_t _frequency{};
+        bool _led_enabled { false };
+        bool _irq_enabled { false };
 
     public:
         esp_err_t Init(void);
         esp_err_t SetFrequency(uint64_t frequency);
         esp_err_t SpiSetup(SPI::Spi *l_spi, const int ss, gpio_num_t reset_pin);
+        esp_err_t LedSetup(gpio_num_t green_pin, gpio_num_t red_pin);
+        void LedEnable(bool led_enabled);
+        esp_err_t IrqSetup(gpio_num_t irq_pin);
+        void IrqEnable(bool irq_enabled);
         uint8_t ReadRegister(uint8_t reg_addr);
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
         esp_err_t TransmitString(const char *data_tx);

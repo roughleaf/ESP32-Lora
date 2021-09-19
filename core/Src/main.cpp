@@ -30,6 +30,9 @@ esp_err_t Main::setup(void)
     AppTimer.Init(0, 0, 1, &apptimer_event_handler);
     Spi_3.Init(SPI3_HOST, spi_3_miso, spi_3_mosi, spi_3_sclk);
     Lora.SpiSetup(&Spi_3, lora_ss_pin, lora_reset_pin);
+    Lora.LedEnable(true);
+    Lora.LedSetup(GPIO_NUM_26, GPIO_NUM_27);
+    Lora.Init();
     Wifi.Init();
     SntpTime.Init();
 

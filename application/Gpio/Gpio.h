@@ -4,6 +4,20 @@
 
 namespace Gpio
 {
+    class GpioInput
+    {
+    private:
+        gpio_num_t _pin;
+        bool _active_low;
+
+        esp_err_t _init (const gpio_num_t pin);
+
+    public:
+        GpioInput(const gpio_num_t pin);
+        GpioInput(void);
+        esp_err_t Init (const gpio_num_t pin);
+    }; // GpioInput Class
+
     class GpioOutput
     {
     private:
@@ -18,10 +32,7 @@ namespace Gpio
         GpioOutput(const gpio_num_t pin);
         GpioOutput(void);
         esp_err_t Init (const gpio_num_t pin, const bool activeLow);
-        esp_err_t High(void);
-        esp_err_t Low(void);
-        esp_err_t Active(void);
-        esp_err_t Inactive(void);
+        esp_err_t Init (const gpio_num_t pin);
         esp_err_t On(void);
         esp_err_t Off(void);
         esp_err_t Toggle(void);

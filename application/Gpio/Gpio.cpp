@@ -2,9 +2,35 @@
 
 namespace Gpio
 {
+// ================================= GpioInput ==============================
+    esp_err_t GpioInput::_init (const gpio_num_t pin)
+    {
+        esp_err_t status{ESP_OK};
+
+        
+
+        return status;
+    }
+    
+    GpioInput::GpioInput(const gpio_num_t pin)
+    {
+        _init(pin);
+    }
+
+    GpioInput::GpioInput(void)
+    {
+
+    }
+    
+    esp_err_t GpioInput::Init(const gpio_num_t pin)
+    {
+        return _init(pin);
+    }
+
+// ================================= GpioOutput ==============================
     esp_err_t GpioOutput::_init(const gpio_num_t pin, const bool activeLow)
     {
-        esp_err_t status = ESP_OK;
+        esp_err_t status{ESP_OK};
 
         _active_low = activeLow;
         _pin = pin;
@@ -38,6 +64,11 @@ namespace Gpio
     esp_err_t GpioOutput::Init(const gpio_num_t pin, const bool activeLow)
     {
         return _init(pin, activeLow);
+    }
+
+    esp_err_t GpioOutput::Init(const gpio_num_t pin)
+    {
+        return _init(pin, false);
     }
 
     esp_err_t GpioOutput::On(void)

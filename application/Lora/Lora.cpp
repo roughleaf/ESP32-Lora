@@ -2,6 +2,18 @@
 
 namespace LORA
 {
+    bool Lora::_led_enabled {false};
+    bool Lora::_irq_enabled {false};
+
+    void Lora::Lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
+    {
+        if (_led_enabled)
+        {
+            this._led_green.Off(); // Set LED on when LoRa Init Done, for debug only;
+            this._led_red.On();
+        }
+    }
+
     esp_err_t Lora::SpiSetup(SPI::Spi* l_spi, const int ss, gpio_num_t reset_pin)
     {
         esp_err_t status{ESP_OK};
@@ -39,6 +51,11 @@ namespace LORA
         status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
         // RegIrqFlags
 
+        if(_irq_enabled)
+        {
+            _lora_irq.SetEventHandler(Lora_event_handler);
+        }
+
         if (_led_enabled)
         {
             if(ESP_OK == status)
@@ -59,13 +76,14 @@ namespace LORA
     esp_err_t Lora::_setInterruptTxRx(lora_interrupt_t dio0)
     {
         esp_err_t status{ESP_OK};
+        _dio0 = dio0;
 
         switch (dio0)
         {
         case rx_int:
             status = WriteRegister(RegDioMapping1, Lora_RxDone);
             break;
-        case lora_interrupt_t::tx_int:
+        case tx_int:
             status = WriteRegister(RegDioMapping1, Lora_TxDone);
             break;
         }

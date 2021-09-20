@@ -10,7 +10,7 @@ namespace TIMER
 {
     ESP_EVENT_DEFINE_BASE(TIMER_EVENTS);
 
-    bool AppTimer::apptimer_isr_callback(void *args)
+    bool IRAM_ATTR AppTimer::apptimer_isr_callback(void *args)
     {
         //ESP_LOGI(_log_tag, "AppTimer Callback ISR called");
         esp_event_isr_post(TIMER_EVENTS, TIMER_EVENT_ISR, NULL, 0, NULL);

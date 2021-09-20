@@ -143,8 +143,8 @@ namespace LORA
         esp_err_t _setInterruptTxRx(lora_interrupt_t dio0);
 
         uint64_t _frequency{};
-        bool _led_enabled { false };
-        bool _irq_enabled { false };
+        static bool _led_enabled;
+        static bool _irq_enabled;
 
     public:
         esp_err_t Init(void);
@@ -157,6 +157,8 @@ namespace LORA
         uint8_t ReadRegister(uint8_t reg_addr);
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
         esp_err_t TransmitString(const char *data_tx);
+
+        static void Lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
     }; // class Lora
 } // namespace Lora

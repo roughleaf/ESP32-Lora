@@ -32,6 +32,8 @@ esp_err_t Main::setup(void)
     Lora.SpiSetup(&Spi_3, lora_ss_pin, lora_reset_pin);
     Lora.LedEnable(true);
     Lora.LedSetup(GPIO_NUM_26, GPIO_NUM_27);
+    Lora.IrqEnable(true);
+    Lora.IrqSetup(GPIO_NUM_2);
     Lora.Init();
     Wifi.Init();
     SntpTime.Init();

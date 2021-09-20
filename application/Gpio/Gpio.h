@@ -1,28 +1,48 @@
 #pragma once
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "esp_event.h"
 #include "driver/gpio.h"
 
 namespace Gpio
 {
-    class GpioInput
+    ESP_EVENT_DECLARE_BASE(INPUT_EVENTS);
+
+    class GpioBase
     {
-    private:
+    protected:
         gpio_num_t _pin;
         bool _active_low;
 
+    }; // GpioBase Class
+
+    class GpioInput : public GpioBase
+    {
+    private:
         esp_err_t _init (const gpio_num_t pin);
+        static bool _event_handler_set;
+        static bool _interrupts_enabled;
+
+        static void IRAM_ATTR gpio_isr_callback(void* arg);
+        
 
     public:
         GpioInput(const gpio_num_t pin);
         GpioInput(void);
         esp_err_t Init (const gpio_num_t pin);
+        int Read(void);
+        esp_err_t SetEventHandler(esp_event_handler_t Gpio_e_h);
+        static esp_err_t EnableInterrupt(const gpio_num_t pin);
     }; // GpioInput Class
 
-    class GpioOutput
+    class GpioOutput : public GpioBase
     {
-    private:
-        gpio_num_t _pin;
-        bool _active_low;
+    private:        
         bool _level = false;
 
         esp_err_t _init (const gpio_num_t pin, const bool activeLow);

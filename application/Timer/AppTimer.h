@@ -32,7 +32,7 @@ namespace TIMER
             TIMER_EVENT_STOPPED     // raised when the timer has been stopped
         };
 
-        static bool apptimer_isr_callback(void* args);  // TODO Trigger event or xQueueSendFromISR. Try Events
+        static bool IRAM_ATTR apptimer_isr_callback(void* args);
         //static void* apptimer_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
     }; // Class AppTimer
 } // namespace TIMER

@@ -2,17 +2,7 @@
 
 namespace LORA
 {
-    bool Lora::_led_enabled {false};
     bool Lora::_irq_enabled {false};
-
-    void Lora::Lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data)
-    {
-        if (_led_enabled)
-        {
-            this._led_green.Off(); // Set LED on when LoRa Init Done, for debug only;
-            this._led_red.On();
-        }
-    }
 
     esp_err_t Lora::SpiSetup(SPI::Spi* l_spi, const int ss, gpio_num_t reset_pin)
     {
@@ -50,26 +40,6 @@ namespace LORA
         // RegPayloadLength
         status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
         // RegIrqFlags
-
-        if(_irq_enabled)
-        {
-            _lora_irq.SetEventHandler(Lora_event_handler);
-        }
-
-        if (_led_enabled)
-        {
-            if(ESP_OK == status)
-            {
-            _led_green.On(); // Set LED on when LoRa Init Done, for debug only;
-            _led_red.Off();
-            }
-            else
-            {
-                _led_green.Off(); // Set LED on when LoRa Init Done, for debug only;
-                _led_red.On();
-            }
-        }
-
         return status;
     }
 
@@ -91,24 +61,14 @@ namespace LORA
         return status;
     }
 
-    esp_err_t Lora::LedSetup(gpio_num_t green_pin, gpio_num_t red_pin)
+    esp_err_t Lora::IrqSetup(gpio_num_t irq_pin, esp_event_handler_t lora_e_h)
     {
-        esp_err_t status{ESP_OK};
-        // TODO Setup the interrupt functions for each
-        status = _led_red.Init(red_pin);
-        status |= _led_green.Init(green_pin);
+        esp_err_t status {ESP_OK};
+
+        status = _lora_irq.Init(irq_pin);
+        status |= _lora_irq.SetEventHandler(lora_e_h);
 
         return status;
-    }
-
-    void Lora::LedEnable(bool led_enabled)
-    {
-        _led_enabled = led_enabled;
-    }
-
-    esp_err_t Lora::IrqSetup(gpio_num_t irq_pin)
-    {
-        return _lora_irq.Init(irq_pin);
     }
 
     void Lora::IrqEnable(bool irq_enabled)
@@ -145,6 +105,17 @@ namespace LORA
     }
 
     esp_err_t Lora::TransmitString(const char *data_tx)
+    {
+        esp_err_t status{ESP_OK};
+        // TODO Set FifoPtrAddr to FifoTxPtrBase.
+        // TODO Write PayloadLength bytes to the FIFO (RegFifo)
+        // TODO Set Mode to TX
+        // TODO Check and handle TX done interrupt
+
+        return status;
+    }
+
+    esp_err_t Lora::TransmitByte(const char data_tx)
     {
         esp_err_t status{ESP_OK};
         // TODO Set FifoPtrAddr to FifoTxPtrBase.

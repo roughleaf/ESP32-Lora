@@ -136,8 +136,6 @@ namespace LORA
 
         spi_device_handle_t _spi_handle;
         Gpio::GpioOutput _reset;
-        Gpio::GpioOutput _led_green;
-        Gpio::GpioOutput _led_red;
         Gpio::GpioInput _lora_irq;
         SPI::Spi *_spi;
         esp_err_t _setInterruptTxRx(lora_interrupt_t dio0);
@@ -150,15 +148,12 @@ namespace LORA
         esp_err_t Init(void);
         esp_err_t SetFrequency(uint64_t frequency);
         esp_err_t SpiSetup(SPI::Spi *l_spi, const int ss, gpio_num_t reset_pin);
-        esp_err_t LedSetup(gpio_num_t green_pin, gpio_num_t red_pin);
-        void LedEnable(bool led_enabled);
-        esp_err_t IrqSetup(gpio_num_t irq_pin);
+        esp_err_t IrqSetup(gpio_num_t irq_pin, esp_event_handler_t lora_e_h);
         void IrqEnable(bool irq_enabled);
         uint8_t ReadRegister(uint8_t reg_addr);
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
         esp_err_t TransmitString(const char *data_tx);
-
-        static void Lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
+        esp_err_t TransmitByte(const char data_tx);
 
     }; // class Lora
 } // namespace Lora

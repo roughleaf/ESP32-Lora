@@ -1,18 +1,24 @@
 #pragma once
 
+#include <string>
+#include <iostream>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "nvs_flash.h"
+
 #include "Gpio.h"
 #include "Wifi.h"
 #include "Lora.h"
 #include "SntpTime.h"
 #include "AppTimer.h"
-#include <string>
-#include <iostream>
 
 class Main final
 {
+private:
+    constexpr static const char *AppTimer_tag{"AppTimer"};
+    constexpr static const char *Lora_tag{"Lora"};
+
 public:
     Main(void) : SntpTime {SNTP::Sntp::get_instance()} {}
 
@@ -26,15 +32,21 @@ public:
 
     esp_err_t setup(void);
     void run(void);
+
     static void apptimer_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
+    static void lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
     WIFI::Wifi::state_e wifiState { WIFI::Wifi::state_e::NOT_INITIALISED };
 
     Gpio::GpioOutput led1Green { GPIO_NUM_14 };
     Gpio::GpioOutput led1Red { GPIO_NUM_25 };
+    Gpio::GpioOutput LoraLedGreen { GPIO_NUM_26 };
+    Gpio::GpioOutput LoraLedRed { GPIO_NUM_27 };
     WIFI::Wifi Wifi;
     SPI::Spi Spi_3;
     LORA::Lora Lora;
     SNTP::Sntp& SntpTime;
     TIMER::AppTimer AppTimer;
 };
+
+static Main App;

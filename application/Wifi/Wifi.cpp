@@ -88,7 +88,10 @@ namespace WIFI
             case IP_EVENT_STA_LOST_IP:
             {
                 std::lock_guard<std::mutex> state_guard(state_mutx);
-                _state = state_e::WAITING_FOR_IP;
+                if (state_e::DISCONNECTED != _state)
+                {
+                    _state = state_e::WAITING_FOR_IP;
+                }
                 ESP_LOGI(_log_tag, "Lost IP");
                 break;
             }

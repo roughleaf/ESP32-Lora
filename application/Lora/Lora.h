@@ -131,8 +131,10 @@ namespace LORA
 
     class Lora
     {
+        public:
+        enum lora_interrupt_t {tx_int, rx_int};
     private:
-        enum lora_interrupt_t {tx_int, rx_int} _dio0;
+        lora_interrupt_t _dio0;
 
         spi_device_handle_t _spi_handle;
         Gpio::GpioOutput _reset;
@@ -154,6 +156,12 @@ namespace LORA
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
         esp_err_t TransmitString(const char *data_tx);
         esp_err_t TransmitByte(const char data_tx);
+        esp_err_t ClearIrqFlags();
+
+        lora_interrupt_t GetInterruptMode(void);
+
+        spi_device_handle_t GetSpiHandle(void);
+
 
     }; // class Lora
 } // namespace Lora

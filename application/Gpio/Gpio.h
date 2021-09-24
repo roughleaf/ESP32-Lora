@@ -28,7 +28,7 @@ namespace Gpio
         static bool _event_handler_set;
         static bool _interrupts_enabled;
 
-        static void IRAM_ATTR gpio_isr_callback(void* arg);
+        
         
 
     public:
@@ -38,6 +38,8 @@ namespace Gpio
         int Read(void);
         esp_err_t SetEventHandler(esp_event_handler_t Gpio_e_h);
         static esp_err_t EnableInterrupt(const gpio_num_t pin);
+
+        static void IRAM_ATTR gpio_isr_callback(void* arg);
     }; // GpioInput Class
 
     class GpioOutput : public GpioBase

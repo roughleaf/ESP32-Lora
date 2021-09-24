@@ -77,4 +77,9 @@ namespace SPI
         return status;
     }
 
-} // namespace Ispi
+    spi_device_handle_t Spi::GetHandle(void)
+    {
+        return _handle;
+    }
+
+} // namespace SPI

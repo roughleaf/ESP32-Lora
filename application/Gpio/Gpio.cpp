@@ -11,7 +11,7 @@ namespace Gpio
     {
         if (_event_handler_set)
         {
-            esp_event_isr_post(INPUT_EVENTS, 0, NULL, 0, NULL);
+            esp_event_isr_post(INPUT_EVENTS, 0, nullptr, 0, nullptr);
         }
     }
 
@@ -56,7 +56,7 @@ namespace Gpio
     {
         esp_err_t status{ESP_OK};
 
-        status |= esp_event_handler_instance_register(INPUT_EVENTS, 0, Gpio_e_h, 0, NULL);
+        status |= esp_event_handler_instance_register(INPUT_EVENTS, 0, Gpio_e_h, 0, nullptr);
 
         if (ESP_OK == status)
         {

@@ -4,6 +4,8 @@
 #include "esp_log.h"
 #define LOG_TAG "MAIN"
 
+Main App;
+
 extern "C" void app_main(void)
 {
     ESP_LOGI(LOG_TAG, "Creating default even loop");
@@ -34,6 +36,8 @@ esp_err_t Main::setup(void)
     Wifi.Init();
     SntpTime.Init();
 
+    //xTaskCreate(lora_task, "lora_task", 8192, NULL, 10, NULL);
+
     std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
 
     return status;
@@ -41,12 +45,12 @@ esp_err_t Main::setup(void)
 
 void Main::run(void)
 {
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    ESP_LOGI(LOG_TAG, "Transmitting byte on LORA");
+    Lora.TransmitByte('T');
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
-    //std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
-    //LoraDev.WriteRegister(0x01, 0x0B);
-    //std::cout << "Lora SX1278 Operating Mode: " << (int)Lora.ReadRegister(LORA::RegOpMode) << std::endl;
-    //std::cout << "Lora SX1278 Revision  : " << (int)Lora.ReadRegister(LORA::RegVersion1) << std::endl;
-}
 
+    std::cout << "Lora SX1278 Revision  : " << (int)Lora.ReadRegister(LORA::RegVersion1) << '\n';
+    std::cout << "Lora Spi Handle       : " << (int)Lora.GetSpiHandle() << '\n';
+}

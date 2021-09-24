@@ -9,9 +9,10 @@ namespace LORA
         esp_err_t status{ESP_OK};
 
         _spi = l_spi;
+
+        //_spi.Init(SPI3_HOST, spi_3_miso, spi_3_mosi, spi_3_sclk);
         _reset.Init(reset_pin, true);
 
-        //status |= _spi.Init(SPI3_HOST, 19, 23, 18);
         status |= _spi->RegisterDevice(0, ss);
 
         _reset.Off();
@@ -66,6 +67,7 @@ namespace LORA
         esp_err_t status {ESP_OK};
 
         status = _lora_irq.Init(irq_pin);
+        status |= _lora_irq.EnableInterrupt(irq_pin);
         status |= _lora_irq.SetEventHandler(lora_e_h);
 
         return status;
@@ -118,12 +120,31 @@ namespace LORA
     esp_err_t Lora::TransmitByte(const char data_tx)
     {
         esp_err_t status{ESP_OK};
-        // TODO Set FifoPtrAddr to FifoTxPtrBase.
-        // TODO Write PayloadLength bytes to the FIFO (RegFifo)
-        // TODO Set Mode to TX
+        _setInterruptTxRx(tx_int);
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x01);   // Set to Standby
+        // Set FifoPtrAddr to FifoTxPtrBase.
+        WriteRegister(Lora_RegFifoAddrPtr, 0x80);               // Tx FIFO start at 0x80
+        WriteRegister(RegFifo, data_tx);                        // Write byte to TX FIFO
+        WriteRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x03);   // Set to TX mode
         // TODO Check and handle TX done interrupt
 
         return status;
+    }
+
+    esp_err_t Lora::ClearIrqFlags()
+    {
+        return WriteRegister(LORA::Lora_RegIrqFlags, 0x01 << 3 | 0x01 << 6);
+    }
+
+    spi_device_handle_t Lora::GetSpiHandle(void)
+    {
+        return _spi->GetHandle();
+    }
+
+    Lora::lora_interrupt_t Lora::GetInterruptMode(void)
+    {
+        return _dio0;
     }
 
 } // namespace Lora

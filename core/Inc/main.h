@@ -34,7 +34,9 @@ public:
     void run(void);
 
     static void apptimer_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
-    static void lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
+    static void IRAM_ATTR lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
+
+    static void lora_task(void* arg);
 
     WIFI::Wifi::state_e wifiState { WIFI::Wifi::state_e::NOT_INITIALISED };
 
@@ -49,4 +51,4 @@ public:
     TIMER::AppTimer AppTimer;
 };
 
-static Main App;
+extern Main App;

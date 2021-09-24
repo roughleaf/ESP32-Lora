@@ -12,13 +12,14 @@ namespace SPI
         esp_err_t RegisterDevice(const uint8_t mode, const int ss);
         uint8_t ReadRegister(uint8_t reg_addr);
         esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
+        spi_device_handle_t GetHandle(void);
 
     private:
         spi_bus_config_t spi_bus_cfg;
         spi_device_interface_config_t spi_interface_cfg;
-
-        spi_host_device_t _spi_peripheral{};       
         spi_device_handle_t _handle{};
+        spi_host_device_t _spi_peripheral{};       
+        
         uint8_t _ss;
         spi_transaction_t spi_transaction;
 
@@ -26,4 +27,4 @@ namespace SPI
         esp_err_t _transfer_multiples_bytes(uint8_t reg_addr, size_t data_length);
 
     }; // class spi
-} // namespace Ispi
+} // namespace SPI

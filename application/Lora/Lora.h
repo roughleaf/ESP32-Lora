@@ -157,6 +157,9 @@ namespace LORA
         esp_err_t TransmitString(const char *data_tx);
         esp_err_t TransmitByte(const char data_tx);
         esp_err_t ClearIrqFlags();
+        esp_err_t Listen(void);
+        esp_err_t StandBy(void);
+        esp_err_t Sleep(void);
 
         lora_interrupt_t GetInterruptMode(void);
 

@@ -54,25 +54,9 @@ void Main::apptimer_event_handler(void *handler_args, esp_event_base_t base, int
         if (LORA::Lora::lora_interrupt_t::rx_int == App.Lora.GetInterruptMode())
         {
             ESP_LOGI(Lora_tag, "Lora RX Event Triggered");
+            std::cout << "Character received: " << App.Lora.ReadRegister(0x00) << '\n';
             App.Lora.ClearIrqFlags();
-            App.LoraLedGreen.Toggle();
+            App.LoraLedRed.Toggle();
             ESP_LOGI(Lora_tag, "IRQ flags cleared");
-        }
-    }
-
-    void Main::lora_task(void *arg)
-    {
-        //uint32_t io_num;
-        for (;;)
-        {
-            ESP_LOGI(Lora_tag, "Lora task doing stuff");
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
-            //App.LoraLedGreen.Toggle();
-            //App.Lora.ReadRegister(LORA::RegVersion1);
-            //if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
-            //{
-            //    printf("GPIO[%d] intr, val: %d\n", io_num, gpio_get_level(io_num));
-            //}
-            std::cout << "Lora Spi Handle in Task: " << (int)App.Lora.GetSpiHandle() << '\n';
         }
     }

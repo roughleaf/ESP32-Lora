@@ -17,7 +17,7 @@ class Main final
 {
 private:
     constexpr static const char *AppTimer_tag{"AppTimer"};
-    constexpr static const char *Lora_tag{"Lora"};
+    constexpr static const char *Lora_tag{"Lora_Event"};
 
 public:
     Main(void) : SntpTime {SNTP::Sntp::get_instance()} {}

@@ -132,6 +132,37 @@ namespace LORA
         return status;
     }
 
+    esp_err_t Lora::Listen(void)
+    {
+        esp_err_t status{ESP_OK};
+        _setInterruptTxRx(rx_int);
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x01);   // Set to Standby
+
+        // Set FifoPtrAddr to FifoTxPtrBase.
+        WriteRegister(Lora_RegFifoAddrPtr, 0x00);               // Rx FIFO start at 0x00
+        WriteRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x05);   // Set to RX Continuous mode
+        // TODO Check and handle RX done interrupt
+
+        return status;
+    }
+
+    esp_err_t Lora::StandBy(void)
+    {
+        esp_err_t status{ESP_OK};
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x01);   // Set to Standby
+
+        return status;
+    }
+
+    esp_err_t Lora::Sleep(void)
+    {
+        esp_err_t status{ESP_OK};
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x00);   // Set to Standby
+
+        return status;
+    }
+
     esp_err_t Lora::ClearIrqFlags()
     {
         return WriteRegister(LORA::Lora_RegIrqFlags, 0x01 << 3 | 0x01 << 6);

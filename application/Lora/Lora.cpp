@@ -36,7 +36,10 @@ namespace LORA
         status |= WriteRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
         status |= WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.
 
-        status |= SetFrequency(433000000); // Set to 433Mhz
+        status |= WriteRegister(RegPaConfig, 0x70 | 0x0E);  // Set PA gain to 14
+        status |= WriteRegister(RegOcp, 0x01 << 5 | 0x0F);  // OC set to 120mA
+
+        status |= SetFrequency(431000000); // Set to 431Mhz
 
         // RegPayloadLength
         status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
@@ -141,6 +144,7 @@ namespace LORA
         // Set FifoPtrAddr to FifoTxPtrBase.
         WriteRegister(Lora_RegFifoAddrPtr, 0x00);               // Rx FIFO start at 0x00
         WriteRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
+        WriteRegister(Lora_RegRxNbBytes, 0x01);             // Payload Length is 1 byte
         status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x05);   // Set to RX Continuous mode
         // TODO Check and handle RX done interrupt
 

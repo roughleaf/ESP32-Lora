@@ -35,7 +35,7 @@ esp_err_t Main::setup(void)
     Lora.Init();
     Wifi.Init();
     SntpTime.Init();
-    //Lora.Listen();
+    Lora.Listen();
 
     std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
 
@@ -46,7 +46,7 @@ void Main::run(void)
 {
     vTaskDelay(2000 / portTICK_PERIOD_MS);
     //ESP_LOGI(LOG_TAG, "Transmitting byte on LORA");
-    Lora.TransmitByte('T');
+    //Lora.TransmitByte('T');
 
     //ESP_LOGI(LOG_TAG, testMac.get_mac());
 

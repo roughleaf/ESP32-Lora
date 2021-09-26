@@ -55,6 +55,7 @@ void Main::apptimer_event_handler(void *handler_args, esp_event_base_t base, int
         {
             ESP_LOGI(Lora_tag, "Lora RX Event Triggered");
             std::cout << "Character received: " << App.Lora.ReadRegister(0x00) << '\n';
+            std::cout << "Current RSSI: " << App.Lora.GetRSSI() << '\n';
             App.Lora.ClearIrqFlags();
             App.LoraLedRed.Toggle();
             ESP_LOGI(Lora_tag, "IRQ flags cleared");

@@ -160,6 +160,7 @@ namespace LORA
         esp_err_t Listen(void);
         esp_err_t StandBy(void);
         esp_err_t Sleep(void);
+        int GetRSSI(void);
 
         lora_interrupt_t GetInterruptMode(void);
 

@@ -26,23 +26,31 @@ namespace LORA
         esp_err_t status { ESP_OK };
 
         status |= WriteRegister(RegOpMode, 0x00);         // Sleep mode
-        status |= WriteRegister(RegOpMode, 0x01 << 7);    // Lora Mode
+        status |= WriteRegister(RegOpMode, 0x01 << 7 | 0x01 << 3);    // Lora Mode
 
         _setInterruptTxRx(rx_int); // Initialise with RxDone interrupt enabled
 
         // Spreading Factor 6. Highest datarate for shortest time on air. See datasheet Page 27
-        status |= WriteRegister(Lora_RegModemConfig2, 0x06 << 4 | 0x01 << 2);     // Set SpreadingFactor = 6, CRC on
+        /*status |= WriteRegister(Lora_RegModemConfig2, 0x06 << 4 | 0x01 << 2);     // Set SpreadingFactor = 6, CRC on
         status |= WriteRegister(Lora_RegModemConfig1, (0x08 << 4) | (0x02 << 1) | 0x01);  // Set bandwidth to 250Khz, error code rate 4/6, Implicit header mode        
         status |= WriteRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
-        status |= WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.
+        status |= WriteRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.        
 
-        status |= WriteRegister(RegPaConfig, 0x70 | 0x0E);  // Set PA gain to 14
-        status |= WriteRegister(RegOcp, 0x01 << 5 | 0x0F);  // OC set to 120mA
+        status |= SetFrequency(431000000); // Set to 431Mhz*/
 
-        status |= SetFrequency(431000000); // Set to 431Mhz
+        status |= WriteRegister(RegPaDac, 0x87);                // Heavy PA boost
+        status |= WriteRegister(RegPaConfig, 0x70 | 0x80 | 15);  // Set PA gain to high
+        status |= WriteRegister(RegPaConfig, 0x70 | 15);
+        status |= WriteRegister(RegOcp, 0x01 << 5 | 0x0F);  // OC set to 120mA, I might need to increase this for the gain
+        //status |= WriteRegister(RegOcp, 0x0b); // disable over current
+
+        status |= WriteRegister(RegLna, ReadRegister(RegLna) | 0x03);  // Enable LNA boost (HF)
+        status |= WriteRegister(Lora_RegModemConfig3, 0x04);             // Set Auto AGC
 
         // RegPayloadLength
         status |= WriteRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
+
+        //StandBy();
         // RegIrqFlags
         return status;
     }
@@ -180,6 +188,14 @@ namespace LORA
     Lora::lora_interrupt_t Lora::GetInterruptMode(void)
     {
         return _dio0;
+    }
+
+    int Lora::GetRSSI(void)
+    {
+        int rssi{};
+        rssi = static_cast<int>(ReadRegister(Lora_RegRssiValue));
+        rssi -= 164;
+        return rssi;
     }
 
 } // namespace Lora

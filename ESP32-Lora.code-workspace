@@ -65,7 +65,8 @@
 			"thread": "cpp",
 			"cinttypes": "cpp",
 			"typeinfo": "cpp",
-			"*.ipp": "cpp"
+			"*.ipp": "cpp",
+			"*.inc": "cpp"
 		},
 		"cSpell.words": [
 			"Gpio",

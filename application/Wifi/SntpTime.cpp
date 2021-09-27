@@ -17,7 +17,7 @@ namespace SNTP
         // TODO update "last_update"
     }
 
-    esp_err_t Sntp::Init(void)
+    esp_err_t Sntp::init(void)
     {
         if (!_running)
         {

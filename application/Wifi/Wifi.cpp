@@ -104,7 +104,7 @@ namespace WIFI
     }
 
     // This function will only be called from the AppTimer event handler
-    esp_err_t Wifi::Begin(void)
+    esp_err_t Wifi::begin(void)
     {
         std::lock_guard<std::mutex> connect_guard(connect_mutx);
         std::lock_guard<std::mutex> state_guard(state_mutx);
@@ -128,7 +128,7 @@ namespace WIFI
         case state_e::NOT_INITIALISED:
         case state_e::INITIALISED:
         case state_e::ERROR:
-            ESP_LOGI(LOG_TAG, "Wifi Begin Fail");
+            ESP_LOGI(LOG_TAG, "Wifi begin Fail");
             status = ESP_FAIL;
             break;
         }
@@ -218,7 +218,7 @@ namespace WIFI
         return status;
     }
 
-    esp_err_t Wifi::Init(void)
+    esp_err_t Wifi::init(void)
     {
         return _init();
     }

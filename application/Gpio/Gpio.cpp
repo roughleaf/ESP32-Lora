@@ -42,17 +42,17 @@ namespace Gpio
 
     }
     
-    esp_err_t GpioInput::Init(const gpio_num_t pin)
+    esp_err_t GpioInput::init(const gpio_num_t pin)
     {
         return _init(pin);
     }
 
-    int GpioInput::Read(void)
+    int GpioInput::read(void)
     {
         return gpio_get_level(_pin);
     }
 
-    esp_err_t GpioInput::SetEventHandler(esp_event_handler_t Gpio_e_h)
+    esp_err_t GpioInput::setEventHandler(esp_event_handler_t Gpio_e_h)
     {
         esp_err_t status{ESP_OK};
 
@@ -66,7 +66,7 @@ namespace Gpio
         return status;
     }
 
-    esp_err_t GpioInput::EnableInterrupt(const gpio_num_t pin)
+    esp_err_t GpioInput::enableInterrupt(const gpio_num_t pin)
     {
         esp_err_t status {ESP_OK};
 
@@ -116,29 +116,29 @@ namespace Gpio
     {        
     }
 
-    esp_err_t GpioOutput::Init(const gpio_num_t pin, const bool activeLow)
+    esp_err_t GpioOutput::init(const gpio_num_t pin, const bool activeLow)
     {
         return _init(pin, activeLow);
     }
 
-    esp_err_t GpioOutput::Init(const gpio_num_t pin)
+    esp_err_t GpioOutput::init(const gpio_num_t pin)
     {
         return _init(pin, false);
     }
 
-    esp_err_t GpioOutput::On(void)
+    esp_err_t GpioOutput::on(void)
     {
         _level = true;;
         return gpio_set_level(_pin, _active_low ? false : true);
     }
 
-    esp_err_t GpioOutput::Off(void)
+    esp_err_t GpioOutput::off(void)
     {
         _level = false;
         return gpio_set_level(_pin, _active_low ? true : false);
     }
 
-    esp_err_t GpioOutput::Toggle(void)
+    esp_err_t GpioOutput::toggle(void)
     {
         _level = _level ? false : true;
         return gpio_set_level(_pin, _level ? true : false);

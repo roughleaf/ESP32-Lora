@@ -2,7 +2,7 @@
 
 namespace SPI
 {
-    esp_err_t Spi::Init(const spi_host_device_t spi_peripheral, const int pin_miso, const int pin_mosi, const int pin_sclk)
+    esp_err_t Spi::init(const spi_host_device_t spi_peripheral, const int pin_miso, const int pin_mosi, const int pin_sclk)
     {
         esp_err_t status = ESP_OK;
 
@@ -24,7 +24,7 @@ namespace SPI
         return status;
     }
 
-    esp_err_t Spi::RegisterDevice(const uint8_t spi_mode, const int ss)
+    esp_err_t Spi::registerDevice(const uint8_t spi_mode, const int ss)
     {
         esp_err_t status = ESP_OK;
 
@@ -41,14 +41,14 @@ namespace SPI
         return status;
     }
 
-    uint8_t Spi::ReadRegister(uint8_t reg_addr)
+    uint8_t Spi::readRegister(uint8_t reg_addr)
     {
         _transfer_byte(reg_addr & 0x7F, 0);
 
         return spi_transaction.rx_data[0];
     }
 
-    esp_err_t Spi::WriteRegister(uint8_t reg_addr, uint8_t reg_data)
+    esp_err_t Spi::writeRegister(uint8_t reg_addr, uint8_t reg_data)
     {
         esp_err_t status{ESP_OK};
 
@@ -77,7 +77,7 @@ namespace SPI
         return status;
     }
 
-    spi_device_handle_t Spi::GetHandle(void)
+    spi_device_handle_t Spi::getHandle(void)
     {
         return _handle;
     }

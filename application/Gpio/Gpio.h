@@ -34,10 +34,10 @@ namespace Gpio
     public:
         GpioInput(const gpio_num_t pin);
         GpioInput(void);
-        esp_err_t Init (const gpio_num_t pin);
-        int Read(void);
-        esp_err_t SetEventHandler(esp_event_handler_t Gpio_e_h);
-        static esp_err_t EnableInterrupt(const gpio_num_t pin);
+        esp_err_t init (const gpio_num_t pin);
+        int read(void);
+        esp_err_t setEventHandler(esp_event_handler_t Gpio_e_h);
+        static esp_err_t enableInterrupt(const gpio_num_t pin);
 
         static void IRAM_ATTR gpio_isr_callback(void* arg);
     }; // GpioInput Class
@@ -53,11 +53,11 @@ namespace Gpio
         GpioOutput(const gpio_num_t pin, const bool activeLow);
         GpioOutput(const gpio_num_t pin);
         GpioOutput(void);
-        esp_err_t Init (const gpio_num_t pin, const bool activeLow);
-        esp_err_t Init (const gpio_num_t pin);
-        esp_err_t On(void);
-        esp_err_t Off(void);
-        esp_err_t Toggle(void);
+        esp_err_t init (const gpio_num_t pin, const bool activeLow);
+        esp_err_t init (const gpio_num_t pin);
+        esp_err_t on(void);
+        esp_err_t off(void);
+        esp_err_t toggle(void);
 
     }; // GpioOutput Class
 } // namespace Gpio

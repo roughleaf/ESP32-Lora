@@ -11,10 +11,6 @@
 #include "lwip/err.h"
 #include "lwip/sys.h"
 
-
-
-
-
 namespace WIFI
 {
     class Wifi
@@ -46,8 +42,8 @@ namespace WIFI
         Wifi& operator=(const Wifi&)    = default;
         Wifi& operator=(Wifi&&)         = default;
 
-        esp_err_t Init(void);  // Setup the stuff
-        esp_err_t Begin(void); // Start Wifi, connect, etc...
+        esp_err_t init(void);  // Setup the stuff
+        esp_err_t begin(void); // Start Wifi, connect, etc...
 
         constexpr static const state_e& get_state(void) { return _state; }
 

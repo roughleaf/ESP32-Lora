@@ -16,9 +16,9 @@ namespace TIMER
         constexpr static const char *_log_tag{"AppTimer"};
 
         public:
-        esp_err_t Init(int group, int timer, int timer_interval_ms, esp_event_handler_t timer_e_h);
-        esp_err_t Start(void);
-        esp_err_t Stop(void);
+        esp_err_t init(int group, int timer, int timer_interval_ms, esp_event_handler_t timer_e_h);
+        esp_err_t start(void);
+        esp_err_t stop(void);
 
         private:
         timer_config_t timer_config {};

@@ -8,11 +8,11 @@ namespace SPI
     class Spi
     {
     public:
-        esp_err_t Init(const spi_host_device_t spi_peripheral, const int pin_miso, const int pin_mosi, const int pin_sclk);
-        esp_err_t RegisterDevice(const uint8_t mode, const int ss);
-        uint8_t ReadRegister(uint8_t reg_addr);
-        esp_err_t WriteRegister(uint8_t reg_addr, uint8_t reg_data);
-        spi_device_handle_t GetHandle(void);
+        esp_err_t init(const spi_host_device_t spi_peripheral, const int pin_miso, const int pin_mosi, const int pin_sclk);
+        esp_err_t registerDevice(const uint8_t mode, const int ss);
+        uint8_t readRegister(uint8_t reg_addr);
+        esp_err_t writeRegister(uint8_t reg_addr, uint8_t reg_data);
+        spi_device_handle_t getHandle(void);
 
     private:
         spi_bus_config_t spi_bus_cfg;

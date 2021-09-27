@@ -17,7 +17,7 @@ namespace TIMER
         return true;
     }
 
-    esp_err_t AppTimer::Init(int group, int timer, int timer_interval_ms, esp_event_handler_t timer_e_h)
+    esp_err_t AppTimer::init(int group, int timer, int timer_interval_ms, esp_event_handler_t timer_e_h)
     {
         esp_err_t status{ESP_OK};
 
@@ -54,12 +54,12 @@ namespace TIMER
         return status;
     }
 
-    esp_err_t AppTimer::Start(void)
+    esp_err_t AppTimer::start(void)
     {
         return timer_start(_group, _timer);
     }
 
-    esp_err_t AppTimer::Stop(void)
+    esp_err_t AppTimer::stop(void)
     {
         return timer_pause(_group, _timer);
     }

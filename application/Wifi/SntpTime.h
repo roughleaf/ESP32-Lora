@@ -39,7 +39,7 @@ namespace SNTP
             TIME_SRC_CELL_NET = 6
         };
 
-        static esp_err_t Init(void);
+        static esp_err_t init(void);
 
         [[nodiscard]] static const auto time_point_now(void) noexcept
         {

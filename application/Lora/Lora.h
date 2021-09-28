@@ -162,27 +162,39 @@ namespace LORA
         esp_err_t _setFrequency(uint64_t frequency);
         uint8_t _readRegister(uint8_t reg_addr);
         esp_err_t _writeRegister(uint8_t reg_addr, uint8_t reg_data);
+        uint8_t getSpreadingFactor(void);
+        uint32_t getSignalBandwidth(void);
+        esp_err_t lowDataRateOptimize(void);
 
         uint64_t _frequency{};
-        static bool _led_enabled;
         static bool _irq_enabled;
+        bool _implicit_header_mode {false};
 
     public:
         esp_err_t init(uint64_t frequency);
         esp_err_t spiSetup(SPI::Spi *l_spi, const int ss, gpio_num_t reset_pin);
-        esp_err_t irqSetup(gpio_num_t irq_pin, esp_event_handler_t lora_e_h);
+        esp_err_t irqSetup(const gpio_num_t irq_pin, esp_event_handler_t lora_e_h);
         void irqEnable(bool irq_enabled);
-        esp_err_t transmitString(const char *data_tx);
-        esp_err_t transmitByte(const char data_tx);
+        esp_err_t transmitString(const uint8_t *data_tx);
+        esp_err_t transmitByte(const uint8_t data_tx);
         esp_err_t clearIrqFlags();
         esp_err_t listen(void);
         esp_err_t setTxPaLevel(uint8_t pa_level, bool pa_boost);
         esp_err_t setOCP(uint8_t current);
         esp_err_t standBy(void);
         esp_err_t sleep(void);
+        esp_err_t setSpreadingFactor(uint8_t sf);
+        esp_err_t setSignalBandwidth(const uint32_t bw);
+        esp_err_t setCodingRate(uint8_t cr_denominator);
+        esp_err_t enablePayloadCrc(void);
+        esp_err_t disablePayloadCrc(void);
+        esp_err_t implicitHeaderMode(void);
+        esp_err_t explicitHeaderMode(void);
         int getRSSI(void);
         int getPacketRSSI(void);
         uint8_t readReceivedByte(void);
+
+        // TODO LowDataRateOptimize, 
 
         lora_interrupt_t getInterruptMode(void);
 

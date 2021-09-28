@@ -12,12 +12,9 @@ namespace LORA
 
         _spi = l_spi;
 
-        //_spi.init(SPI3_HOST, spi_3_miso, spi_3_mosi, spi_3_sclk);
-        _reset.init(reset_pin, true);
+        status |= _reset.init(reset_pin, true);
 
         status |= _spi->registerDevice(0, ss);
-
-        //_reset.off();
 
         return status;
     }
@@ -32,7 +29,8 @@ namespace LORA
         _reset.off();
         vTaskDelay(pdMS_TO_TICKS(200));
 
-        status |= _writeRegister(RegOpMode, ModeSleep);               // Sleep mode
+        //status |= _writeRegister(RegOpMode, ModeSleep);               // Sleep mode
+        sleep();
         status |= _writeRegister(RegOpMode, ModeLongRangeMode);       // Lora Mode
         status |= _setFrequency(frequency);
 
@@ -119,7 +117,7 @@ namespace LORA
         return status;
     }
 
-    esp_err_t Lora::transmitString(const char *data_tx)
+    esp_err_t Lora::transmitString(const uint8_t *data_tx)
     {
         esp_err_t status{ESP_OK};
         // TODO Set FifoPtrAddr to FifoTxPtrBase.
@@ -130,7 +128,7 @@ namespace LORA
         return status;
     }
 
-    esp_err_t Lora::transmitByte(const char data_tx)
+    esp_err_t Lora::transmitByte(const uint8_t data_tx)
     {
         esp_err_t status{ESP_OK};
         _setInterruptTxRx(tx_int);
@@ -155,9 +153,7 @@ namespace LORA
         status |= _writeRegister(Lora_RegFifoAddrPtr, 0x00);               // Rx FIFO start at 0x00
         status |= _writeRegister(Lora_RegFifoRxBaseAddr, 0x00);
         status |= _writeRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
-        //_writeRegister(Lora_RegRxNbBytes, 0x01);             // Payload Length is 1 byte
         status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeReceiveContinuous);   // Set to RX Continuous mode
-        // TODO Check and handle RX done interrupt
 
         return status;
     }
@@ -210,23 +206,153 @@ namespace LORA
 
     uint8_t Lora::readReceivedByte(void)
     {
-        return(_readRegister(RegFifo));
+        return _readRegister(RegFifo);
     }
 
     esp_err_t Lora::standBy(void)
     {
-        esp_err_t status{ESP_OK};
-        status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeStandby);   // Set to Standby
-
-        return status;
+        return _writeRegister(RegOpMode, ModeLongRangeMode | ModeStandby); 
     }
 
     esp_err_t Lora::sleep(void)
     {
+        return _writeRegister(RegOpMode, ModeLongRangeMode | ModeSleep);
+    }
+
+    uint8_t Lora::getSpreadingFactor(void)
+    {
+        return (_readRegister(Lora_RegModemConfig2) >> 4);
+    }
+    
+    uint32_t Lora::getSignalBandwidth(void)
+    {
+        uint8_t bw = (_readRegister(Lora_RegModemConfig1) >> 4);
+
+        switch(bw)
+        {
+            case 0: return 7.8E3;
+            case 1: return 10.4E3;
+            case 2: return 15.6E3;
+            case 3: return 20.8E3;
+            case 4: return 31.25E3;
+            case 5: return 41.7E3;
+            case 6: return 62.5E3;
+            case 7: return 125E3;
+            case 8: return 250E3;
+            case 9: return 500E3; 
+        }
+
+        return 0;
+    }
+
+    esp_err_t Lora::lowDataRateOptimize(void)
+    {
+        // LowDataRateOptimize, page 27, 28, 114
+        // bw / 2^sf seconds... 1000 / (bw / 2^sf) = ms
+        uint32_t symbolLength = 1000 / (getSignalBandwidth() / (1L << getSpreadingFactor()));
+
+        if(symbolLength > 16)
+        {
+            return _writeRegister(Lora_RegModemConfig3, _readRegister(Lora_RegModemConfig3) | (0x01 << 3));
+        }
+        else
+        {
+            return _writeRegister(Lora_RegModemConfig3, _readRegister(Lora_RegModemConfig3) & 0xF7);
+        }
+    }
+
+    esp_err_t Lora::setSpreadingFactor(uint8_t sf)
+    {
         esp_err_t status{ESP_OK};
-        status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeSleep);   // Set to Standby
+
+        if (sf <= 6)
+        {
+            sf = 6;
+            status |= _writeRegister(Lora_RegDetectOptimize, 0x05);        
+            status |= _writeRegister(Lora_RegDetection_Threshold, 0x0C);
+        }
+        else
+        {
+            if (sf > 12) { sf = 12; }
+            status |= _writeRegister(Lora_RegDetectOptimize, 0x03);        
+            status |= _writeRegister(Lora_RegDetection_Threshold, 0x0A);
+        }
+
+        status |= _writeRegister(Lora_RegModemConfig2, (_readRegister(Lora_RegModemConfig2) & 0x0F) | ((sf << 4) & 0xF0));
+
+        lowDataRateOptimize();
 
         return status;
+    }
+
+    esp_err_t Lora::setSignalBandwidth(const uint32_t bw)
+    {
+        esp_err_t status{ESP_OK};
+
+        uint8_t rbw = 7;
+
+        if (bw <= 7.8E3) { rbw = 0; }
+        else if (bw <= 10.4E3) { rbw = 1; }
+        else if (bw <= 15.6E3) { rbw = 2; }
+        else if (bw <= 20.8E3) { rbw = 3; }
+        else if (bw <= 31.25E3) { rbw = 4; }
+        else if (bw <= 41.7E3) { rbw = 5; }
+        else if (bw <= 62.5E3) { rbw = 6; }
+        else if (bw <= 125E3) { rbw = 7; }
+        else if (_frequency > 169E6)        // channel 8 and 9 not supported on frequencies below 169Mhz
+        {
+            if (bw <= 250E3) { rbw = 8; }
+            else { rbw = 9; }
+        }
+
+        if (9 == rbw)
+        {
+            status |= _writeRegister(0x36, 0x02);     // Erreta Note page 4
+            status |= _writeRegister(0x3A, 0x7F);     // Erreta Note page 4
+        }
+        else
+        {
+            status |= _writeRegister(0x36, 0x03);     // Erreta Note page 4
+        }                                   // Remove this is it causes issues
+
+        status |= _writeRegister(Lora_RegModemConfig1, (_readRegister(Lora_RegModemConfig1) & 0x0F) | ((rbw << 4) & 0xF0));
+
+        lowDataRateOptimize();
+
+        return status;
+    }
+
+    esp_err_t Lora::setCodingRate(uint8_t cr_denominator)
+    {
+        if (cr_denominator < 5) { cr_denominator = 5; }
+        else 
+        if (cr_denominator > 8) { cr_denominator = 8; }
+
+        return _writeRegister(Lora_RegModemConfig1, (_readRegister(Lora_RegModemConfig1) & 0xF1) | (((cr_denominator - 4) << 1) & 0x0E));
+    }
+
+    esp_err_t Lora::enablePayloadCrc(void)
+    {
+        return _writeRegister(Lora_RegModemConfig2, _readRegister(Lora_RegModemConfig2) | 0x04);
+    }
+
+    esp_err_t Lora::disablePayloadCrc(void)
+    {
+        return _writeRegister(Lora_RegModemConfig2, _readRegister(Lora_RegModemConfig2) & 0xFB);
+    }    
+
+    esp_err_t Lora::implicitHeaderMode(void)
+    {
+        _implicit_header_mode = true;
+
+        return _writeRegister(Lora_RegModemConfig1, _readRegister(Lora_RegModemConfig1) | 0x01);
+    }
+
+    esp_err_t Lora::explicitHeaderMode(void)
+    {
+        _implicit_header_mode = false;
+
+        return _writeRegister(Lora_RegModemConfig1, _readRegister(Lora_RegModemConfig1) & 0xFE);
     }
 
     esp_err_t Lora::clearIrqFlags()

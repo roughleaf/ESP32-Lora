@@ -29,27 +29,22 @@ esp_err_t Main::setup(void)
 
     AppTimer.init(0, 0, 1, &apptimer_event_handler);
     Spi_3.init(SPI3_HOST, spi_3_miso, spi_3_mosi, spi_3_sclk);
+
+    Wifi.init();
+    SntpTime.init();
+
     Lora.spiSetup(&Spi_3, lora_ss_pin, lora_reset_pin);
     Lora.irqEnable(true);
     Lora.irqSetup(GPIO_NUM_2, &lora_event_handler);
     Lora.init(434E6);
-    Wifi.init();
-    SntpTime.init();
-    Lora.listen();
 
-    std::cout << "Mac Address: " << Wifi.get_mac() << std::endl;
+    Lora.listen();
 
     return status;
 }
 
 void Main::run(void)
 {
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
-    //ESP_LOGI(LOG_TAG, "Transmitting byte on LORA");
+    vTaskDelay(pdMS_TO_TICKS(2000));
     //Lora.transmitByte('T');
-
-    //ESP_LOGI(LOG_TAG, testMac.get_mac());
-
-    //std::cout << "Lora SX1278 Revision  : " << (int)Lora.readRegister(LORA::RegVersion1) << '\n';
-    //std::cout << "Lora Spi Handle       : " << (int)Lora.getSpiHandle() << '\n';
 }

@@ -73,6 +73,16 @@ namespace LORA
         return status;
     }
 
+    bool Lora::transmitBusy()
+    {
+        if (ModeTransmit == (_readRegister(RegOpMode) & ModeTransmit))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     esp_err_t Lora::irqSetup(gpio_num_t irq_pin, esp_event_handler_t lora_e_h)
     {
         esp_err_t status {ESP_OK};
@@ -361,6 +371,63 @@ namespace LORA
 
         status |= _writeRegister(Lora_RegFifoAddrPtr, 0x00);                 // Reset FIFO pointer to 0
         status |= _writeRegister(Lora_RegIrqFlags, IrqTxDone | IrqRxDone);   // Clear IRQ flags
+
+        return status;
+    }
+
+    esp_err_t Lora::setPreambleLength(uint16_t length)
+    {
+        esp_err_t status{ESP_OK};
+
+        status |= _writeRegister(Lora_RegPreambleMsb, static_cast<uint8_t>(length >> 8));
+        status |= _writeRegister(Lora_RegPreambleLsb, static_cast<uint8_t>(length >> 0));
+
+        return status;
+    }
+
+    esp_err_t Lora::setSyncWord(uint8_t sw)
+    {
+        return _writeRegister(Lora_RegSyncWord, sw);
+    }
+
+    esp_err_t Lora::enableInvertIQ()
+    {
+        esp_err_t status{ESP_OK};
+
+        status |= _writeRegister(Lora_RegInvertIQ, 0x67);
+        status |= _writeRegister(Lora_RegInvertIQ2, 0x19);
+
+        return status;
+    }
+
+    esp_err_t Lora::disableInvertIQ()
+    {
+        esp_err_t status{ESP_OK};
+
+        status |= _writeRegister(Lora_RegInvertIQ, (0x13 << 1));
+        status |= _writeRegister(Lora_RegInvertIQ2, 0x1D);
+
+        return status;
+    }
+
+    // RX Inverted, TX normal
+    esp_err_t Lora::rxInvertIQ()
+    {
+        esp_err_t status{ESP_OK};
+
+        status |= _writeRegister(Lora_RegInvertIQ, 0x66);
+        status |= _writeRegister(Lora_RegInvertIQ2, 0x19);
+
+        return status;
+    }
+
+    // RX Inverted, TX normal.
+    esp_err_t Lora::txInvertIQ()
+    {
+        esp_err_t status{ESP_OK};
+
+        status |= _writeRegister(Lora_RegInvertIQ, 0x27);
+        status |= _writeRegister(Lora_RegInvertIQ2, 0x1D);
 
         return status;
     }

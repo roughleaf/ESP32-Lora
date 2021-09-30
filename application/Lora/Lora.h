@@ -165,6 +165,7 @@ namespace LORA
         uint8_t getSpreadingFactor(void);
         uint32_t getSignalBandwidth(void);
         esp_err_t lowDataRateOptimize(void);
+        bool transmitBusy();
 
         uint64_t _frequency{};
         static bool _irq_enabled;
@@ -193,6 +194,13 @@ namespace LORA
         int getRSSI(void);
         int getPacketRSSI(void);
         uint8_t readReceivedByte(void);
+
+        esp_err_t setPreambleLength(uint16_t length);
+        esp_err_t setSyncWord(uint8_t sw);
+        esp_err_t enableInvertIQ(void);
+        esp_err_t disableInvertIQ(void);
+        esp_err_t rxInvertIQ(void);
+        esp_err_t txInvertIQ(void);
 
         // TODO LowDataRateOptimize, 
 

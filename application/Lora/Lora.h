@@ -144,7 +144,16 @@ namespace LORA
 
     // IRQ Masks
     constexpr static const uint8_t IrqTxDone = 0x08;
+    constexpr static const uint8_t IrqCrcError = 0x20;
     constexpr static const uint8_t IrqRxDone = 0x40;
+
+    // LNA Gain Select
+    constexpr static const uint8_t LnaGain = 0;
+    constexpr static const uint8_t AgcLoop = 1;
+
+    // FIFO Base ptr
+    constexpr static const uint8_t RxBase = 0x00;
+    constexpr static const uint8_t TxBase = 0x80;
 
 
     class Lora
@@ -165,6 +174,8 @@ namespace LORA
         uint8_t getSpreadingFactor(void);
         uint32_t getSignalBandwidth(void);
         esp_err_t lowDataRateOptimize(void);
+        esp_err_t enableAgcAutoOn(void);
+        esp_err_t disableAgcAutoOn(void);
         bool transmitBusy();
 
         uint64_t _frequency{};
@@ -191,6 +202,7 @@ namespace LORA
         esp_err_t disablePayloadCrc(void);
         esp_err_t implicitHeaderMode(void);
         esp_err_t explicitHeaderMode(void);
+        esp_err_t setLnaGain(uint8_t lnaGain);
         int getRSSI(void);
         int getPacketRSSI(void);
         uint8_t readReceivedByte(void);
@@ -202,11 +214,11 @@ namespace LORA
         esp_err_t rxInvertIQ(void);
         esp_err_t txInvertIQ(void);
 
-        // TODO LowDataRateOptimize, 
-
         lora_interrupt_t getInterruptMode(void);
 
         spi_device_handle_t getSpiHandle(void);
+
+        bool crcError(void);
 
 
     }; // class Lora

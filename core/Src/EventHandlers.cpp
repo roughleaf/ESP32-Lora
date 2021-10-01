@@ -51,9 +51,13 @@ void Main::apptimer_event_handler(void *handler_args, esp_event_base_t base, int
             App.LoraLedGreen.toggle();
             ESP_LOGI(Lora_tag, "IRQ flags cleared");
         }
+
         if (LORA::Lora::lora_interrupt_t::rx_int == App.Lora.getInterruptMode())
         {
-            ESP_LOGI(Lora_tag, "Lora RX Event Triggered");
+            if (true == App.Lora.crcError())
+            {
+                ESP_LOGW(Lora_tag, "CRC Error");
+            }
             std::cout << "Character received: " << App.Lora.readReceivedByte() << '\n';
             std::cout << "Current RSSI: " << App.Lora.getPacketRSSI() << '\n';
             App.Lora.clearIrqFlags();

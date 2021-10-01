@@ -29,26 +29,24 @@ namespace LORA
         _reset.off();
         vTaskDelay(pdMS_TO_TICKS(200));
 
-        //status |= _writeRegister(RegOpMode, ModeSleep);               // Sleep mode
         sleep();
         status |= _writeRegister(RegOpMode, ModeLongRangeMode);       // Lora Mode
         status |= _setFrequency(frequency);
 
         _setInterruptTxRx(rx_int); // Initialise with RxDone interrupt enabled
 
-        // Spreading Factor 6. Highest datarate for shortest time on air. See datasheet Page 27
-        /*status |= _writeRegister(Lora_RegModemConfig2, 0x06 << 4 | 0x01 << 2);     // Set SpreadingFactor = 6, CRC on
-        status |= _writeRegister(Lora_RegModemConfig1, (0x08 << 4) | (0x02 << 1) | 0x01);  // Set bandwidth to 250Khz, error code rate 4/6, Implicit header mode        
-        status |= _writeRegister(Lora_RegDetectOptimize, 0b101); // Set the bit field DetectionOptimize of register RegLoRaDetectOptimize to value "0b101"        
-        status |= _writeRegister(Lora_RegDetection_Threshold, 0x0C); // Write 0x0C in the register RegDetectionThreshold.    */    
-
-        status |= _writeRegister(RegLna, _readRegister(RegLna) | 0x03);  // Enable LNA boost (HF)
-        status |= _writeRegister(Lora_RegModemConfig3, 0x04);             // Set Auto AGC
-
+        setSpreadingFactor(7);      // Set default and force AutomaticIFOn to be cleared and LowRate optimize bit to be checked
+        setSignalBandwidth(125);
+        
+        setLnaGain(0);          // AGC Loop control LNA gain
         setTxPaLevel(17, true);
 
         // RegPayloadLength
-        status |= _writeRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
+        // status |= _writeRegister(Lora_RegIrqFlags, 0xB7); // Only TxDone and RxDone IRQs enabled
+        status |= _writeRegister(Lora_RegIrqFlags, ~(IrqTxDone | IrqRxDone)); // Only TxDone and RxDone IRQs enabled
+
+        status |= _writeRegister(Lora_RegFifoTxBaseAddr, TxBase);             // Set TX FIFO base addr to 0x80
+        status |= _writeRegister(Lora_RegFifoRxBaseAddr, RxBase);             // Set RX FIFO base addr to 0x00
 
         standBy();
 
@@ -144,7 +142,8 @@ namespace LORA
         _setInterruptTxRx(tx_int);
         status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeStandby);   // Set to Standby
         // Set FifoPtrAddr to FifoTxPtrBase.
-        _writeRegister(Lora_RegFifoAddrPtr, 0x80);               // Tx FIFO start at 0x80
+        
+        _writeRegister(Lora_RegFifoAddrPtr, TxBase);               // Set FIFO ptr to TX Base
         _writeRegister(RegFifo, data_tx);                        // Write byte to TX FIFO
         _writeRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
         status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeTransmit);   // Set to TX mode
@@ -160,8 +159,7 @@ namespace LORA
         status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeStandby);   // Set to Standby
 
 
-        status |= _writeRegister(Lora_RegFifoAddrPtr, 0x00);               // Rx FIFO start at 0x00
-        status |= _writeRegister(Lora_RegFifoRxBaseAddr, 0x00);
+        status |= _writeRegister(Lora_RegFifoAddrPtr, RxBase);               // Rx FIFO start at 0x00
         status |= _writeRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
         status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeReceiveContinuous);   // Set to RX Continuous mode
 
@@ -370,7 +368,7 @@ namespace LORA
         esp_err_t status{ESP_OK};
 
         status |= _writeRegister(Lora_RegFifoAddrPtr, 0x00);                 // Reset FIFO pointer to 0
-        status |= _writeRegister(Lora_RegIrqFlags, IrqTxDone | IrqRxDone);   // Clear IRQ flags
+        status |= _writeRegister(Lora_RegIrqFlags, IrqTxDone | IrqRxDone | IrqCrcError);   // Clear IRQ flags
 
         return status;
     }
@@ -432,6 +430,42 @@ namespace LORA
         return status;
     }
 
+    esp_err_t Lora::enableAgcAutoOn(void)
+    {
+        return _writeRegister(Lora_RegModemConfig3, (_readRegister(Lora_RegModemConfig3) | (AgcLoop << 2)));
+    }
+
+    esp_err_t Lora::disableAgcAutoOn(void)
+    {
+        return _writeRegister(Lora_RegModemConfig3, (_readRegister(Lora_RegModemConfig3) & 0xFB));
+    }
+
+    esp_err_t Lora::setLnaGain(uint8_t lnaGain)
+    {
+        esp_err_t status{ESP_OK};
+
+        if (lnaGain > 6) { lnaGain = 6; }
+
+        status |= _writeRegister(lnaGain, 0x00);      // Disable LNA boost and get values into a known state
+
+        if (0 == lnaGain)
+        {
+            status |= enableAgcAutoOn();
+        }
+        else
+        {
+            status |= disableAgcAutoOn();
+            if (_frequency >= 779E6)            // Is frequency in HF band
+            {
+                 status |= _writeRegister(LnaGain, 0x03); // Boost LNA current for HF band
+            }
+        }
+        
+        status |= _writeRegister(LnaGain, _readRegister(LnaGain) | lnaGain << 5);
+
+        return status;
+    }
+
     spi_device_handle_t Lora::getSpiHandle(void)
     {
         return _spi->getHandle();
@@ -442,14 +476,21 @@ namespace LORA
         return _dio0;
     }
 
+    // TODO Test frequency and set correct offset
     int Lora::getRSSI(void)
     {
         return static_cast<int>(_readRegister(Lora_RegRssiValue)) - 164;
     }
 
+    // TODO Test frequency and set correct offset
     int Lora::getPacketRSSI(void)
     {
         return static_cast<int>(_readRegister(Lora_RegPktRssiValue)) - 164;
+    }
+
+    bool Lora::crcError(void)
+    {
+        return static_cast<bool>(_readRegister(Lora_RegIrqFlags) & IrqCrcError);
     }
 
 } // namespace Lora

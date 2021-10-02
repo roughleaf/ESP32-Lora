@@ -37,6 +37,8 @@ namespace LORA
 
         setSpreadingFactor(7);      // Set default and force AutomaticIFOn to be cleared and LowRate optimize bit to be checked
         setSignalBandwidth(125);
+        setCodingRate(5);
+        enablePayloadCrc();
         
         setLnaGain(0);          // AGC Loop control LNA gain
         setTxPaLevel(17, true);
@@ -125,17 +127,6 @@ namespace LORA
         return status;
     }
 
-    esp_err_t Lora::transmitString(const uint8_t *data_tx)
-    {
-        esp_err_t status{ESP_OK};
-        // TODO Set FifoPtrAddr to FifoTxPtrBase.
-        // TODO Write PayloadLength bytes to the FIFO (RegFifo)
-        // TODO Set Mode to TX
-        // TODO Check and handle TX done interrupt
-
-        return status;
-    }
-
     esp_err_t Lora::transmitByte(const uint8_t data_tx)
     {
         esp_err_t status{ESP_OK};
@@ -152,6 +143,15 @@ namespace LORA
         return status;
     }
 
+    esp_err_t Lora::transmitData(const uint8_t* data_tx)
+    {
+        return ESP_FAIL;
+    }
+    esp_err_t Lora::transmitData(const uint8_t* data_tx, const uint8_t length_tx)
+    {
+        return ESP_FAIL;
+    }
+
     esp_err_t Lora::listen(void)
     {
         esp_err_t status{ESP_OK};
@@ -160,10 +160,48 @@ namespace LORA
 
 
         status |= _writeRegister(Lora_RegFifoAddrPtr, RxBase);               // Rx FIFO start at 0x00
-        status |= _writeRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
+        //status |= _writeRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
         status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeReceiveContinuous);   // Set to RX Continuous mode
 
         return status;
+    }
+
+    // Page 41: 
+    // Set RegFifoAddrPtr to RegFifoRxCurrentAddr. This sets the FIFO pointer to the location of the last packet received in
+    // the FIFO. The payload can then be extracted by reading the register RegFifo, RegRxNbBytes times.
+    esp_err_t Lora::readData(uint8_t* data_rx)
+    {
+        esp_err_t status {ESP_OK};
+
+        uint8_t data_length = _readRegister(Lora_RegRxNbBytes);
+
+        if (_implicit_header_mode)
+        {
+            data_length = _readRegister(Lora_RegPayloadLength);
+        }
+        else
+        {
+            data_length = _readRegister(Lora_RegRxNbBytes);
+        }
+
+        uint8_t rx_buf[data_length]{};
+
+        status |= _writeRegister(Lora_RegFifoAddrPtr, _readRegister(Lora_RegFifoRxCurrentAddr));
+        // TODO Impliment Read RegRxNbBytes from SPI into rx_buff.
+        memcpy(data_rx, rx_buf, data_length);
+
+        return status;
+    }
+
+    // Not implimented, might not be needed
+    esp_err_t Lora::readData(uint8_t* data_rx, const uint8_t packetId)
+    {
+        // On RX interrupt:
+        // 1. Generate unique packed ID
+        // 2. Save RegFifoRxCurrentAddr
+        // 3. Save RegRxNbBytes
+        // 4. Destroy packet ID after data was read
+        return ESP_FAIL;
     }
 
     esp_err_t Lora::setTxPaLevel(uint8_t pa_level, bool pa_boost)
@@ -214,7 +252,12 @@ namespace LORA
 
     uint8_t Lora::readReceivedByte(void)
     {
-        return _readRegister(RegFifo);
+        esp_err_t status{ESP_OK};
+
+        status |= _writeRegister(Lora_RegFifoAddrPtr, _readRegister(Lora_RegFifoRxCurrentAddr));
+        status |= _readRegister(RegFifo);
+
+        return status;
     }
 
     esp_err_t Lora::standBy(void)
@@ -349,11 +392,16 @@ namespace LORA
         return _writeRegister(Lora_RegModemConfig2, _readRegister(Lora_RegModemConfig2) & 0xFB);
     }    
 
-    esp_err_t Lora::implicitHeaderMode(void)
+    esp_err_t Lora::implicitHeaderMode(uint8_t payLoadLength)
     {
+        esp_err_t status {ESP_OK};
+
         _implicit_header_mode = true;
 
-        return _writeRegister(Lora_RegModemConfig1, _readRegister(Lora_RegModemConfig1) | 0x01);
+        status |= _writeRegister(Lora_RegPayloadLength, payLoadLength);
+        status |= _writeRegister(Lora_RegModemConfig1, _readRegister(Lora_RegModemConfig1) | 0x01);
+
+        return status;
     }
 
     esp_err_t Lora::explicitHeaderMode(void)
@@ -368,7 +416,8 @@ namespace LORA
         esp_err_t status{ESP_OK};
 
         status |= _writeRegister(Lora_RegFifoAddrPtr, 0x00);                 // Reset FIFO pointer to 0
-        status |= _writeRegister(Lora_RegIrqFlags, IrqTxDone | IrqRxDone | IrqCrcError);   // Clear IRQ flags
+        //status |= _writeRegister(Lora_RegIrqFlags, IrqTxDone | IrqRxDone | IrqCrcError);   // Clear IRQ flags
+        status |= _writeRegister(Lora_RegIrqFlags, _readRegister(Lora_RegIrqFlags));   // Clear IRQ flags
 
         return status;
     }

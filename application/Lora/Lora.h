@@ -1,7 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <string>
+
 #include "driver/spi_common.h"
 #include "driver/spi_master.h"
+
 #include "Gpio.h"
 #include "SPI.h"
 
@@ -88,7 +92,7 @@ namespace LORA
     constexpr static const uint8_t Lora_RegFifoAddrPtr = 0x0D;
     constexpr static const uint8_t Lora_RegFifoTxBaseAddr = 0x0E;
     constexpr static const uint8_t Lora_RegFifoRxBaseAddr = 0x0F;
-    constexpr static const uint8_t Lora_FifoRxCurrentAddr = 0x10;
+    constexpr static const uint8_t Lora_RegFifoRxCurrentAddr = 0x10;
     constexpr static const uint8_t Lora_RegIrqFlagsMask = 0x11;
     constexpr static const uint8_t Lora_RegIrqFlags = 0x12;
     constexpr static const uint8_t Lora_RegRxNbBytes = 0x13;
@@ -144,6 +148,7 @@ namespace LORA
 
     // IRQ Masks
     constexpr static const uint8_t IrqTxDone = 0x08;
+    constexpr static const uint8_t IrqValidHeader =  0x10;
     constexpr static const uint8_t IrqCrcError = 0x20;
     constexpr static const uint8_t IrqRxDone = 0x40;
 
@@ -187,8 +192,11 @@ namespace LORA
         esp_err_t spiSetup(SPI::Spi *l_spi, const int ss, gpio_num_t reset_pin);
         esp_err_t irqSetup(const gpio_num_t irq_pin, esp_event_handler_t lora_e_h);
         void irqEnable(bool irq_enabled);
-        esp_err_t transmitString(const uint8_t *data_tx);
         esp_err_t transmitByte(const uint8_t data_tx);
+        esp_err_t transmitData(const uint8_t* data_tx);
+        esp_err_t transmitData(const uint8_t* data_tx, const uint8_t length_tx);
+        esp_err_t readData(uint8_t* data_rx);
+        esp_err_t readData(uint8_t* data_rx, const uint8_t packetId);
         esp_err_t clearIrqFlags();
         esp_err_t listen(void);
         esp_err_t setTxPaLevel(uint8_t pa_level, bool pa_boost);
@@ -200,7 +208,7 @@ namespace LORA
         esp_err_t setCodingRate(uint8_t cr_denominator);
         esp_err_t enablePayloadCrc(void);
         esp_err_t disablePayloadCrc(void);
-        esp_err_t implicitHeaderMode(void);
+        esp_err_t implicitHeaderMode(uint8_t payLoadLength);
         esp_err_t explicitHeaderMode(void);
         esp_err_t setLnaGain(uint8_t lnaGain);
         int getRSSI(void);

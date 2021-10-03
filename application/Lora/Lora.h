@@ -176,6 +176,8 @@ namespace LORA
         esp_err_t _setFrequency(uint64_t frequency);
         uint8_t _readRegister(uint8_t reg_addr);
         esp_err_t _writeRegister(uint8_t reg_addr, uint8_t reg_data);
+        esp_err_t _writeRegisterMultipleBytes(uint8_t reg_addr, uint8_t* reg_data_buffer, uint8_t byteCount);
+        esp_err_t _readRegisterMultipleBytes(uint8_t reg_addr, uint8_t* reg_data_buffer, uint8_t byteCount);
         uint8_t getSpreadingFactor(void);
         uint32_t getSignalBandwidth(void);
         esp_err_t lowDataRateOptimize(void);
@@ -193,10 +195,10 @@ namespace LORA
         esp_err_t irqSetup(const gpio_num_t irq_pin, esp_event_handler_t lora_e_h);
         void irqEnable(bool irq_enabled);
         esp_err_t transmitByte(const uint8_t data_tx);
-        esp_err_t transmitData(const uint8_t* data_tx);
-        esp_err_t transmitData(const uint8_t* data_tx, const uint8_t length_tx);
-        esp_err_t readData(uint8_t* data_rx);
-        esp_err_t readData(uint8_t* data_rx, const uint8_t packetId);
+        esp_err_t transmitString(const char* data_tx);
+        esp_err_t transmitData(uint8_t* data_tx, const uint8_t length_tx);
+        esp_err_t readData(uint8_t* data_rx, uint8_t* byte_count);
+        esp_err_t readData(uint8_t* data_rx, uint8_t* byte_count, const uint8_t packetId);
         esp_err_t clearIrqFlags();
         esp_err_t listen(void);
         esp_err_t setTxPaLevel(uint8_t pa_level, bool pa_boost);

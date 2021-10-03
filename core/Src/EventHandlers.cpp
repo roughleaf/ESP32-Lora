@@ -54,11 +54,16 @@ void Main::apptimer_event_handler(void *handler_args, esp_event_base_t base, int
 
         if (LORA::Lora::lora_interrupt_t::rx_int == App.Lora.getInterruptMode())
         {
+            uint8_t NumBytesReceived{0};
+            //uint8_t buff[52]{0};
+
             if (true == App.Lora.crcError())
             {
                 ESP_LOGW(Lora_tag, "CRC Error");
             }
-            std::cout << "Character received: " << App.Lora.readReceivedByte() << '\n';
+            App.Lora.readData(App.LoraRxBuffer, &NumBytesReceived);
+            std::cout << "Number of bytes received: " << (int)NumBytesReceived << '\n';
+            std::cout << "Data received: " << App.LoraRxBuffer << '\n';
             std::cout << "Current RSSI: " << App.Lora.getPacketRSSI() << '\n';
             App.Lora.clearIrqFlags();
             App.LoraLedRed.toggle();

@@ -38,7 +38,7 @@ esp_err_t Main::setup(void)
     Lora.irqSetup(GPIO_NUM_2, &lora_event_handler);
     Lora.init(434E6);
 
-    Lora.listen();
+    //Lora.listen();
 
     return status;
 }
@@ -47,4 +47,5 @@ void Main::run(void)
 {
     vTaskDelay(pdMS_TO_TICKS(2000));
     //Lora.transmitByte('T');
+    Lora.transmitString("Hello lora test!");
 }

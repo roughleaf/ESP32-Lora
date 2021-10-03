@@ -13,6 +13,8 @@ namespace SPI
         uint8_t readRegister(uint8_t reg_addr);
         esp_err_t writeRegister(uint8_t reg_addr, uint8_t reg_data);
         spi_device_handle_t getHandle(void);
+        esp_err_t writeRegisterMultipleBytes(uint8_t reg_addr, uint8_t* reg_data_buffer, uint8_t byteCount);
+        esp_err_t readRegisterMultipleBytes(uint8_t reg_addr, uint8_t* reg_data_buffer, uint8_t byteCount);
 
     private:
         spi_bus_config_t spi_bus_cfg;
@@ -24,7 +26,7 @@ namespace SPI
         spi_transaction_t spi_transaction;
 
         esp_err_t _transfer_byte(uint8_t reg_addr, uint8_t data);
-        esp_err_t _transfer_multiples_bytes(uint8_t reg_addr, size_t data_length);
+        esp_err_t _transfer_multiples_bytes(uint8_t reg_addr, uint8_t* tx_buf, uint8_t* rx_buf, size_t data_length);
 
     }; // class spi
 } // namespace SPI

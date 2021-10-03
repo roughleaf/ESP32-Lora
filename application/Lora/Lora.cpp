@@ -113,7 +113,7 @@ namespace LORA
         return status;
     }
 
-    uint8_t Lora::_readRegister(uint8_t reg_addr)
+    uint8_t Lora::_readRegister(uint8_t reg_addr)    
     {        
         return _spi->readRegister(reg_addr);
     }
@@ -125,6 +125,16 @@ namespace LORA
         status = _spi->writeRegister(reg_addr, reg_data);
 
         return status;
+    }
+
+    esp_err_t Lora::_writeRegisterMultipleBytes(uint8_t reg_addr, uint8_t* reg_data_buffer, uint8_t byteCount)
+    {
+        return _spi->writeRegisterMultipleBytes(reg_addr, reg_data_buffer, byteCount);
+    }
+
+    esp_err_t Lora::_readRegisterMultipleBytes(uint8_t reg_addr, uint8_t* reg_data_buffer, uint8_t byteCount)
+    {
+        return _spi->readRegisterMultipleBytes(reg_addr, reg_data_buffer, byteCount);
     }
 
     esp_err_t Lora::transmitByte(const uint8_t data_tx)
@@ -143,21 +153,37 @@ namespace LORA
         return status;
     }
 
-    esp_err_t Lora::transmitData(const uint8_t* data_tx)
+    esp_err_t Lora::transmitString(const char* data_tx)
     {
-        return ESP_FAIL;
+        const int length = strlen(data_tx);
+
+        uint8_t buff_tx[length];
+
+        memcpy(buff_tx, data_tx, length);
+
+        return transmitData(buff_tx, length);
     }
-    esp_err_t Lora::transmitData(const uint8_t* data_tx, const uint8_t length_tx)
+
+    esp_err_t Lora::transmitData(uint8_t* data_tx, const uint8_t length_tx)
     {
-        return ESP_FAIL;
+        esp_err_t status{ESP_OK};
+        _setInterruptTxRx(tx_int);
+        status |= standBy();   // Set to Standby
+        // Set FifoPtrAddr to FifoTxPtrBase.
+        
+        status |= _writeRegister(Lora_RegFifoAddrPtr, TxBase);               // Set FIFO ptr to TX Base
+        status |= _writeRegisterMultipleBytes(RegFifo, data_tx, length_tx);
+        status |= _writeRegister(Lora_RegPayloadLength, length_tx);             // Payload Length
+        status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeTransmit);   // Set to TX mode
+
+        return status;
     }
 
     esp_err_t Lora::listen(void)
     {
         esp_err_t status{ESP_OK};
         _setInterruptTxRx(rx_int);
-        status |= _writeRegister(RegOpMode, ModeLongRangeMode | ModeStandby);   // Set to Standby
-
+        status |= standBy();   // Set to Standby
 
         status |= _writeRegister(Lora_RegFifoAddrPtr, RxBase);               // Rx FIFO start at 0x00
         //status |= _writeRegister(Lora_RegPayloadLength, 0x01);             // Payload Length is 1 byte
@@ -169,32 +195,31 @@ namespace LORA
     // Page 41: 
     // Set RegFifoAddrPtr to RegFifoRxCurrentAddr. This sets the FIFO pointer to the location of the last packet received in
     // the FIFO. The payload can then be extracted by reading the register RegFifo, RegRxNbBytes times.
-    esp_err_t Lora::readData(uint8_t* data_rx)
+    esp_err_t Lora::readData(uint8_t* data_rx, uint8_t* byte_count)
     {
         esp_err_t status {ESP_OK};
 
-        uint8_t data_length = _readRegister(Lora_RegRxNbBytes);
+        //uint8_t data_length{1};
 
         if (_implicit_header_mode)
         {
-            data_length = _readRegister(Lora_RegPayloadLength);
+            *byte_count = _readRegister(Lora_RegPayloadLength);
         }
         else
         {
-            data_length = _readRegister(Lora_RegRxNbBytes);
+            *byte_count = _readRegister(Lora_RegRxNbBytes);
         }
 
-        uint8_t rx_buf[data_length]{};
+        //uint8_t rx_buf[data_length]{};
 
         status |= _writeRegister(Lora_RegFifoAddrPtr, _readRegister(Lora_RegFifoRxCurrentAddr));
-        // TODO Impliment Read RegRxNbBytes from SPI into rx_buff.
-        memcpy(data_rx, rx_buf, data_length);
+        status |= _readRegisterMultipleBytes(RegFifo, data_rx, *byte_count);
 
         return status;
     }
 
     // Not implimented, might not be needed
-    esp_err_t Lora::readData(uint8_t* data_rx, const uint8_t packetId)
+    esp_err_t Lora::readData(uint8_t* data_rx, uint8_t* byte_count, const uint8_t packetId)
     {
         // On RX interrupt:
         // 1. Generate unique packed ID

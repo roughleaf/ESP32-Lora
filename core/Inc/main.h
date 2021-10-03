@@ -28,6 +28,10 @@ public:
 
     constexpr static int lora_ss_pin = 5;
 
+    // Rx buffer length should be in multiples of 4 to avoinf out of bounds memory exceptions
+    constexpr static int lora_tx_buffer_size = 52;
+    constexpr static int lora_rx_buffer_size = 52;
+
     constexpr static gpio_num_t lora_reset_pin = GPIO_NUM_4;
 
     esp_err_t setup(void);
@@ -37,6 +41,9 @@ public:
     static void IRAM_ATTR lora_event_handler(void *handler_args, esp_event_base_t base, int32_t id, void *event_data);
 
     static void lora_task(void* arg);
+
+    uint8_t LoraTxBuffer[lora_tx_buffer_size]{};
+    uint8_t LoraRxBuffer[lora_rx_buffer_size]{};
 
     WIFI::Wifi::state_e wifiState { WIFI::Wifi::state_e::NOT_INITIALISED };
 
